@@ -89,6 +89,10 @@ void fecharAplicativo() {
     exit(0);
 }
 
+void novaFuncao() {
+    printf("NOVA FUNCAO");
+}
+
 int main() {
     int opcaoMenu = 0;
     while (1) {
