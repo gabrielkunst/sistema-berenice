@@ -89,6 +89,11 @@ void fecharAplicativo() {
     exit(0);
 }
 
+void teste()
+{
+    
+}
+
 int main() {
     int opcaoMenu = 0;
     while (1) {
