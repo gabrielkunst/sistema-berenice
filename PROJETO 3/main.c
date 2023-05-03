@@ -1,20 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Product {
+typedef struct {
     int id;
     float price;
     char name[50];
     int quantidadeEstoque;
     int quantidadeVendida;
-    int quantidadeVendidaTemp;
-} products[5] = {
-    {1, 7.50, "Pao de Forma", 0, 0, 0},
-    {2, 8.69, "Pao de Centeio", 0, 0, 0},
-    {3, 5.00, "Broa de Milho", 0, 0, 0},
-    {4, 4.50, "Sonho", 0, 0, 0},
-    {5, 3.25, "Tubaina", 0, 0, 0},
-};
+} Product;
 
 /* FUNCAO PARA VERIFICAR O INPUT DO USUARIO */
 void mostrarErro(char message[]) {
@@ -86,11 +79,19 @@ void abrirVendas() {
 
 /* FUNCAO RESPONSAVEL PELA OPCAO 3, SAIR DO PROGRAMA */
 void fecharAplicativo() {
-    exit(0);
+    exit(1);
+}
+
+void buscarListaProdutos(Product *products) {
+    FILE *pFile = fopen("C:\\Users\\Gabriel\\OneDrive\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\products.txt", "w");
+    fprintf(pFile, "BOM DIA");
+    fclose(pFile);
 }
 
 int main() {
     int opcaoMenu = 0;
+    Product *pProducts = NULL;
+    buscarListaProdutos(pProducts);
     while (1) {
         printf("\n|     MENU    |\n");
         printf("[1] Produtos\n[2] Vendas\n[3] Sair\nDigite um valor: ");
