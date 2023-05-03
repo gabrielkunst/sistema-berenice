@@ -88,6 +88,11 @@ void buscarListaProdutos(Product *products) {
     fclose(pFile);
 }
 
+void teste()
+{
+    
+}
+
 int main() {
     int opcaoMenu = 0;
     Product *pProducts = NULL;
