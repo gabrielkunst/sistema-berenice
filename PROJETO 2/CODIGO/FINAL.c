@@ -6,20 +6,14 @@
 float totalTemp = 0, total = 0;
 
 /* TEMPLATE STRUCT PARA DEFINIR CADA PRODUTO ==> Ao usar o typedef, não é necessário usar a palavra-chave struct sempre que for declarar uma variável do tipo Product. */
-struct Product {
+typedef struct {
     int id;
     float price;
     char name[50];
     int quantidadeEstoque;
     int quantidadeVendida;
     int quantidadeVendidaTemp;
-} products[5] = {
-    {1, 7.50, "Pao de Forma", 0, 0, 0},
-    {2, 8.69, "Pao de Centeio", 0, 0, 0},
-    {3, 5.00, "Broa de Milho", 0, 0, 0},
-    {4, 4.50, "Sonho", 0, 0, 0},
-    {5, 3.25, "Tubaina", 0, 0, 0},
-};
+} Product;
 
 /* FUNCAO PARA VERIFICAR O INPUT DO USUARIO */
 void mostrarErro(char message[]) {
