@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -49,12 +50,11 @@ void organizarListaId(Produto produtos[], int tamanho) {
 }
 
 /* FUNCAO PARA RESETAR AS VENDAS POS PAGAMENTO */
-void resetarVendas(Produto produtos[], int tamanho, float *total) {
+void resetarVendas(Produto produtos[], int tamanho) {
     for (int i = 0; i < tamanho; i++) {
         produtos[i].vendidos += produtos[i].tempVendidos;
         produtos[i].tempVendidos = 0;
     }
-    *total = 0;
 }
 
 /* FUNÇÕES DOS PRODUTOS --------------------------------------------------------*/
@@ -167,8 +167,8 @@ void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float total) {
 }
 
 /* FUNCAO PARA MOSTRAR A NOTA FISCAL */
-void mostrarNotaFiscal(Produto produtos[], int tamanho) {
-    float totalTemp = 0;
+void mostrarNotaFiscal(Produto produtos[], int tamanho, float total) {
+    float totalTemp = total;
     organizarListaSubtotal(produtos, tamanho);
     int item = 1;
     printf("\n----------------------------------------------------------------------------\n");
@@ -188,10 +188,9 @@ void mostrarNotaFiscal(Produto produtos[], int tamanho) {
 }
 
 /* FUNCAO PARA ESCOLHA DO METODO DE PAGAMENTO */
-void pagarCompra(Produto produtos[], int tamanho, float *total) {
+void pagarCompra(Produto produtos[], int tamanho, float totalTemp, float *total) {
     int metodo = 0, parcelas = 0;
     float totalRecebido = 0, troco = 0;
-    float totalTemp = 0;
     while (1) {
         printf("\nEscolha um meio de pagamento: [1 para A VISTA / 2 para a PRAZO] => ");
         if (scanf("%d", &metodo) != 1 || (metodo != 1 && metodo != 2)) {
@@ -208,7 +207,7 @@ void pagarCompra(Produto produtos[], int tamanho, float *total) {
                 }
                 printf("Valor total final (com desconto): R$%.2f\n", totalTemp);
                 while (1) {
-                    printf("\nDigite o valor recebido pelo caixa: ");
+                    printf("\nDigite o valor recebido pelo caixa: R$  ");
                     scanf("%f", &totalRecebido);
                     if (totalRecebido < totalTemp) {
                         printf("Valor invalido! Faltam R$ %.2f \n", totalTemp - totalRecebido);
@@ -240,76 +239,87 @@ void pagarCompra(Produto produtos[], int tamanho, float *total) {
                     }
                 }
             }
-            resetarVendas(produtos, tamanho, total);
+            *total = totalTemp;
+            resetarVendas(produtos, tamanho);
             break;
         }
     }
 }
 
 /* FUNCAO RESPONSAVEL POR VERIFICAR O ESTOQUE, PARA VER SE TODOS OS ITENS ESTAO INDISPONIVEIS */
-int verificarEstoque(Produto produtos[], int tamanho) {
-    int estoqueVazio = 0;
+bool verificarEstoque(Produto produtos[], int tamanho) {
+    int produtosVazios = 0;
     for (int i = 0; i < tamanho; i++) {
         if (produtos[i].estoque == 0) {
-            estoqueVazio++;
+            produtosVazios++;
         }
     }
-    return estoqueVazio;
+    return (produtosVazios == 5 ? true : false);
 }
 
 /* FUNCAO RESPONSAVEL PELA OPCAO 3, VENDER UM PRODUTO */
 void realizarVenda(Produto produtos[], int tamanho, float *total) {
-    int id = 0, opcao = 0, quant = 0, posicao = 0;
-    int estoqueVazio = verificarEstoque(produtos, tamanho);
+    bool isEstoqueVazio = verificarEstoque(produtos, tamanho);
+    double idProduto = 0;
     float totalTemp = 0;
-    if (estoqueVazio != 5) {
-        while (opcao != 2 && estoqueVazio != 5) {
+    int opcaoMenu = 0, quantidade = 0;
+
+    if (!isEstoqueVazio) {
+        while (!isEstoqueVazio && (opcaoMenu != 2)) {
             printarTabelaProdutos(produtos, tamanho);
-            printf("Digite o codigo do produto a ser comprado: ");
-            if (scanf("%d", &id) != 1 || id < 1 || id > 5) {
-                mostrarErro("Codigo invalido!");
+            printf("\nDigite o ID do produto: ");
+            if (scanf("%lf", &idProduto) != 1) {
+                mostrarErro("Valor invalido. Tente novamente!");
             } else {
-                posicao = id - 1;
-                if (!produtos[posicao].estoque) {
-                    printf("Produto indisponivel!\n");
-                } else {
-                    printf("Produto selecionado: %s\n", produtos[posicao].nome);
-                    opcao = 0;
-                    while (opcao != 1 && opcao != 2 && estoqueVazio != 5) {
+                bool idExistente = false;
+                int indexProduto = 0, i = 0;
+                for (; i < tamanho; i++) {
+                    if (produtos[i].id == idProduto) {
+                        idExistente = true;
+                        indexProduto = i;
+                        break;
+                    }
+                }
+                if (idExistente && produtos[indexProduto].estoque != 0) {
+                    printf("Produto selecionado => %s\n", produtos[indexProduto].nome);
+                    do {
                         printf("Digite a quantidade desejada: ");
-                        if (scanf("%d", &quant) != 1 || quant > produtos[posicao].estoque || quant == 0) {
+                        if (scanf("%d", &quantidade) != 1 || quantidade > produtos[indexProduto].estoque || quantidade == 0) {
                             mostrarErro("\nQuantidade invalida ou insuficiente!");
                         } else {
                             printf("Produto adicionado ao carrinho!\n");
-                            totalTemp += produtos[posicao].preco * quant;
-                            produtos[posicao].tempVendidos = quant;
-                            produtos[posicao].estoque -= quant;
+                            totalTemp += produtos[indexProduto].preco * quantidade;
+                            produtos[indexProduto].tempVendidos = quantidade;
+                            produtos[indexProduto].estoque -= quantidade;
                             do {
                                 printf("\nDeseja comprar mais um produto? [1 para SIM | 2 para NAO] => ");
-                                if (scanf("%d", &opcao) != 1 || (opcao != 1 && opcao != 2)) {
+                                if (scanf("%d", &opcaoMenu) != 1 || (opcaoMenu != 1 && opcaoMenu != 2)) {
                                     mostrarErro("Valor invalido!");
                                 } else {
-                                    estoqueVazio = verificarEstoque(produtos, tamanho);
-                                    if (estoqueVazio == 5 && opcao == 1) {
+                                    isEstoqueVazio = verificarEstoque(produtos, tamanho);
+                                    if (isEstoqueVazio == true && opcaoMenu == 1) {
                                         printf("\nTodos os itens estao indisponiveis. Cadastre-os primeiro!\n");
                                     }
                                 }
-                            } while (opcao != 1 && opcao != 2 && estoqueVazio != 5);
+                            } while (opcaoMenu != 1 && opcaoMenu != 2 && isEstoqueVazio == false);
                         }
-                    }
+                    } while ((opcaoMenu != 1 && opcaoMenu != 2 && isEstoqueVazio == false));
+
+                } else {
+                    printf("ID invalido ou produto indisponivel. Tente novamente!\n");
                 }
             }
         }
-        mostrarNotaFiscal(produtos, tamanho);
-        pagarCompra(produtos, tamanho, total);
+        mostrarNotaFiscal(produtos, tamanho, totalTemp);
+        pagarCompra(produtos, tamanho, totalTemp, total);
     } else {
-        printf("Primeiro cadastre os produtos!\n");
+        printf("Todos os produtos estao com estoque indisponivel!\n");
     }
 }
 
 /* FUNÇÕES PRINCIPAIS */
 /* FUNCAO RESPONSAVEL PELA OPCAO 1, PRODUTOS */
-void abrirProdutos(Produto *produtos, int *tamanho) {
+void abrirSubmenuProdutos(Produto *produtos, int *tamanho) {
     int opcaoMenu = 0;
     while (opcaoMenu != 7) {
         printf("\n|     PRODUTOS    |\n");
@@ -345,9 +355,9 @@ void abrirProdutos(Produto *produtos, int *tamanho) {
 }
 
 /* FUNCAO RESPONSAVEL PELA OPCAO 2, VENDAS */
-void abrirVendas(Produto *produtos, int *tamanho) {
+void abrirSubmenuVendas(Produto *produtos, int *tamanho) {
     int opcaoMenu = 0;
-    float total = 0;
+    float total = 0, *pTotal = NULL;
     // float *ptotal = &total;
     while (opcaoMenu != 3) {
         printf("\n|     VENDAS    |\n");
@@ -357,7 +367,7 @@ void abrirVendas(Produto *produtos, int *tamanho) {
         } else {
             switch (opcaoMenu) {
                 case 1:
-                    printf("REALIZAR VENDA\n");
+                    realizarVenda(produtos, *tamanho, pTotal);
                     break;
                 case 2:
                     mostrarRelatorioDeVendas(produtos, *tamanho, total);
@@ -388,13 +398,13 @@ int main() {
         } else {
             switch (opcaoMenu) {
                 case 1:
-                    abrirProdutos(produtos, ptamanho);
+                    abrirSubmenuProdutos(produtos, ptamanho);
                     break;
                 case 2:
-                    abrirVendas(produtos, ptamanho);
+                    abrirSubmenuVendas(produtos, ptamanho);
                     break;
                 case 3:
-                    printf("SAINDO ...");
+                    printf("SAINDO...");
                     fecharAplicativo();
                     break;
             }

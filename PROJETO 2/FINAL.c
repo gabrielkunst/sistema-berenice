@@ -81,7 +81,6 @@ void resetarVendas(Product products[], int size) {
     totalTemp = 0;
 }
 
-
 /* FUNCAO RESPONSAVEL PELA OPCAO 1, CADASTRAR ESTOQUE */
 void cadastrarEstoque(Product products[], int size) {
     int id = 0, temp = 0, posicao = 0;
