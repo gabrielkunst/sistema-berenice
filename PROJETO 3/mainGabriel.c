@@ -72,7 +72,7 @@ void removerUnderscore(Produto produtos[], int tamanho) {
 
 /* BUSCA OS PRODUTOS NO ARQUIVO TXT */
 void fetchProdutos(Produto **produtos, int *tamanho) {
-    FILE *file = fopen("C:\\Users\\GK\\Documents\\GitHub\\sistema-berenice\\TESTES\\produtos.txt", "r");
+    FILE *file = fopen("C:\\Users\\GK\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\dist\\produtos.txt", "r");
     if (file == NULL) {
         printf("\nErro na leitura do arquivo!\n");
         system("pause");
@@ -104,7 +104,7 @@ void salvarProdutos(Produto produtos[], int tamanho) {
             }
         }
     }
-    FILE *file = fopen("C:\\Users\\GK\\Documents\\GitHub\\sistema-berenice\\TESTES\\produtosssssssssa.txt", "w");
+    FILE *file = fopen("C:\\Users\\GK\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\dist\\produtos.txt", "w");
     if (file == NULL) {
         printf("\nErro na leitura do arquivo!\n");
         system("pause");
@@ -347,7 +347,8 @@ void abrirProdutos(Produto *produtos, int *tamanho) {
 /* FUNCAO RESPONSAVEL PELA OPCAO 2, VENDAS */
 void abrirVendas(Produto *produtos, int *tamanho) {
     int opcaoMenu = 0;
-    float total = 0, *ptotal = &total;
+    float total = 0;
+    // float *ptotal = &total;
     while (opcaoMenu != 3) {
         printf("\n|     VENDAS    |\n");
         printf("[1] Realizar Venda\n[2] Relatorio de Vendas\n[3] Voltar\nDigite um valor: ");
