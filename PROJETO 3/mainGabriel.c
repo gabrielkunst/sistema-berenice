@@ -8,7 +8,7 @@ typedef struct {
     double preco;
     int estoque;
     int vendidos;
-    int tempVendidos
+    int tempVendidos;
 } Produto;
 
 /* FUNÇÕES GERAIS */
@@ -164,6 +164,147 @@ void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float total) {
     printf("-------------------------------------------------------------------------------------------------\n");
     printf("|%30s|%-35s|R$%-18.2f\t|\n", "", "VALOR TOTAL VENDIDO", total);
     printf("-------------------------------------------------------------------------------------------------\n");
+}
+
+/* FUNCAO PARA MOSTRAR A NOTA FISCAL */
+void mostrarNotaFiscal(Produto produtos[], int tamanho) {
+    float totalTemp = 0;
+    organizarListaSubtotal(produtos, tamanho);
+    int item = 1;
+    printf("\n----------------------------------------------------------------------------\n");
+    printf("|                                NOTA FISCAL                               |\n");
+    printf("----------------------------------------------------------------------------\n");
+    printf("|%-10s|%-20s|%-15s|%-10s|%-15s|\n", "ITEM", "NOME", "VALOR UNIT.", "QUANT.", "SUB-TOTAL");
+    printf("----------------------------------------------------------------------------\n");
+    for (int i = 0; i < tamanho; i++) {
+        if (produtos[i].tempVendidos > 0) {
+            printf("|%-10d|%-20s|R$%-13.2f|%-10d|R$%-13.2f|\n", item, produtos[i].nome, produtos[i].preco, produtos[i].tempVendidos, produtos[i].preco * produtos[i].tempVendidos);
+            item++;
+        }
+    }
+    printf("----------------------------------------------------------------------------\n");
+    printf("|%47s|%-10s|R$%-13.2f|\n", "", "TOTAL", totalTemp);
+    printf("----------------------------------------------------------------------------\n");
+}
+
+/* FUNCAO PARA ESCOLHA DO METODO DE PAGAMENTO */
+void pagarCompra(Produto produtos[], int tamanho, float *total) {
+    int metodo = 0, parcelas = 0;
+    float totalRecebido = 0, troco = 0;
+    float totalTemp = 0;
+    while (1) {
+        printf("\nEscolha um meio de pagamento: [1 para A VISTA / 2 para a PRAZO] => ");
+        if (scanf("%d", &metodo) != 1 || (metodo != 1 && metodo != 2)) {
+            mostrarErro("Metodo de pagamento invalido!");
+        } else {
+            if (metodo == 1) {
+                printf("Voce escolheu pagar a vista!\n");
+                if (totalTemp < 50) {
+                    totalTemp *= 0.95;
+                } else if (totalTemp >= 50 && totalTemp <= 100) {
+                    totalTemp *= 0.9;
+                } else {
+                    totalTemp *= 0.82;
+                }
+                printf("Valor total final (com desconto): R$%.2f\n", totalTemp);
+                while (1) {
+                    printf("\nDigite o valor recebido pelo caixa: ");
+                    scanf("%f", &totalRecebido);
+                    if (totalRecebido < totalTemp) {
+                        printf("Valor invalido! Faltam R$ %.2f \n", totalTemp - totalRecebido);
+                    } else {
+                        troco = totalRecebido - totalTemp;
+                        if (troco > 0) {
+                            printf("Troco a ser retornado: R$%.2f \n", troco);
+                        }
+                        break;
+                    }
+                }
+            } else {
+                printf("Voce escolheu pagar a prazo!\n");
+                while (1) {
+                    printf("\nEm quantas parcelas voce deseja pagar?");
+                    if (scanf("%d", &parcelas) != 1 || parcelas < 1) {
+                        mostrarErro("Numero de parcelas invalido, digite um valor igual ou acima de 1 parcela!");
+                    } else {
+                        printf("Voce escolheu pagar em %d parcelas.\n", parcelas);
+                        if (parcelas <= 3) {
+                            totalTemp *= 1.05;
+                        } else {
+                            totalTemp *= 1.08;
+                        }
+                        printf("\nValor total final (com acrescimo): R$%.2f\n", totalTemp);
+                        printf("Valor da parcela: R$%.2f\n", totalTemp / parcelas);
+                        printf("Total de parcelas: %d\n", parcelas);
+                        break;
+                    }
+                }
+            }
+            resetarVendas(produtos, tamanho, total);
+            break;
+        }
+    }
+}
+
+/* FUNCAO RESPONSAVEL POR VERIFICAR O ESTOQUE, PARA VER SE TODOS OS ITENS ESTAO INDISPONIVEIS */
+int verificarEstoque(Produto produtos[], int tamanho) {
+    int estoqueVazio = 0;
+    for (int i = 0; i < tamanho; i++) {
+        if (produtos[i].estoque == 0) {
+            estoqueVazio++;
+        }
+    }
+    return estoqueVazio;
+}
+
+/* FUNCAO RESPONSAVEL PELA OPCAO 3, VENDER UM PRODUTO */
+void realizarVenda(Produto produtos[], int tamanho, float *total) {
+    int id = 0, opcao = 0, quant = 0, posicao = 0;
+    int estoqueVazio = verificarEstoque(produtos, tamanho);
+    float totalTemp = 0;
+    if (estoqueVazio != 5) {
+        while (opcao != 2 && estoqueVazio != 5) {
+            printarTabelaProdutos(produtos, tamanho);
+            printf("Digite o codigo do produto a ser comprado: ");
+            if (scanf("%d", &id) != 1 || id < 1 || id > 5) {
+                mostrarErro("Codigo invalido!");
+            } else {
+                posicao = id - 1;
+                if (!produtos[posicao].estoque) {
+                    printf("Produto indisponivel!\n");
+                } else {
+                    printf("Produto selecionado: %s\n", produtos[posicao].nome);
+                    opcao = 0;
+                    while (opcao != 1 && opcao != 2 && estoqueVazio != 5) {
+                        printf("Digite a quantidade desejada: ");
+                        if (scanf("%d", &quant) != 1 || quant > produtos[posicao].estoque || quant == 0) {
+                            mostrarErro("\nQuantidade invalida ou insuficiente!");
+                        } else {
+                            printf("Produto adicionado ao carrinho!\n");
+                            totalTemp += produtos[posicao].preco * quant;
+                            produtos[posicao].tempVendidos = quant;
+                            produtos[posicao].estoque -= quant;
+                            do {
+                                printf("\nDeseja comprar mais um produto? [1 para SIM | 2 para NAO] => ");
+                                if (scanf("%d", &opcao) != 1 || (opcao != 1 && opcao != 2)) {
+                                    mostrarErro("Valor invalido!");
+                                } else {
+                                    estoqueVazio = verificarEstoque(produtos, tamanho);
+                                    if (estoqueVazio == 5 && opcao == 1) {
+                                        printf("\nTodos os itens estao indisponiveis. Cadastre-os primeiro!\n");
+                                    }
+                                }
+                            } while (opcao != 1 && opcao != 2 && estoqueVazio != 5);
+                        }
+                    }
+                }
+            }
+        }
+        mostrarNotaFiscal(produtos, tamanho);
+        pagarCompra(produtos, tamanho, total);
+    } else {
+        printf("Primeiro cadastre os produtos!\n");
+    }
 }
 
 /* FUNÇÕES PRINCIPAIS */

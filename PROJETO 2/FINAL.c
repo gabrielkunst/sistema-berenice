@@ -81,6 +81,49 @@ void resetarVendas(Product products[], int size) {
     totalTemp = 0;
 }
 
+
+/* FUNCAO RESPONSAVEL PELA OPCAO 1, CADASTRAR ESTOQUE */
+void cadastrarEstoque(Product products[], int size) {
+    int id = 0, temp = 0, posicao = 0;
+    organizarListaId(products, size);
+    printf("\n-------------------------------------------------\n");
+    printf("|%-10s|%-10s|%-20s\t|\n", "CODIGO", "ESTOQUE", "ITEM");
+    printf("-------------------------------------------------\n");
+    for (int i = 0; i < size; i++) {
+        printf("|%-10d|%-10d|%-20s\t|\n", products[i].id, products[i].quantidadeEstoque, products[i].name);
+    }
+    printf("-------------------------------------------------\n");
+    while (1) {
+        printf("Digite o codigo do produto a ser alterado: ");
+        if (scanf("%d", &id) != 1 || id < 1 || id > 5) {
+            mostrarErro("Codigo invalido!\n");
+        } else {
+            posicao = id - 1;
+            printf("Produto selecionado: %s\n", products[posicao].name);
+            printf("Quantidade em estoque: ");
+            if (scanf("%d", &temp) != 1 || temp < 0) {
+                mostrarErro("Quantidade invalida, a mesma deve ser maior ou igual a zero\n");
+            } else {
+                printf("Estoque atualizado com sucesso!\n");
+                products[posicao].quantidadeEstoque = temp;
+                break;
+            }
+        }
+    }
+}
+
+/* FUNCAO RESPONSAVEL PELA OPCAO 2, VISUALIZAR ESTOQUE */
+void mostrarEstoque(Product products[], int size) {
+    organizarListaId(products, size);
+    printf("\n-----------------------------------------------------------------\n");
+    printf("|%-12s|%-20s|%-12s|%-10s\t|\n", "CODIGO", "ITEM", "PRECO", "ESTOQUE");
+    printf("-----------------------------------------------------------------\n");
+    for (int i = 0; i < size; i++) {
+        printf("|%-12d|%-20s|R$%-10.2f|%-10d\t|\n", products[i].id, products[i].name, products[i].price, products[i].quantidadeEstoque);
+    }
+    printf("-----------------------------------------------------------------\n");
+}
+
 /* FUNCAO PARA ESCOLHA DO METODO DE PAGAMENTO */
 void pagarCompra(Product products[], int size) {
     int metodo = 0, parcelas = 0;
@@ -137,48 +180,6 @@ void pagarCompra(Product products[], int size) {
             break;
         }
     }
-}
-
-/* FUNCAO RESPONSAVEL PELA OPCAO 1, CADASTRAR ESTOQUE */
-void cadastrarEstoque(Product products[], int size) {
-    int id = 0, temp = 0, posicao = 0;
-    organizarListaId(products, size);
-    printf("\n-------------------------------------------------\n");
-    printf("|%-10s|%-10s|%-20s\t|\n", "CODIGO", "ESTOQUE", "ITEM");
-    printf("-------------------------------------------------\n");
-    for (int i = 0; i < size; i++) {
-        printf("|%-10d|%-10d|%-20s\t|\n", products[i].id, products[i].quantidadeEstoque, products[i].name);
-    }
-    printf("-------------------------------------------------\n");
-    while (1) {
-        printf("Digite o codigo do produto a ser alterado: ");
-        if (scanf("%d", &id) != 1 || id < 1 || id > 5) {
-            mostrarErro("Codigo invalido!\n");
-        } else {
-            posicao = id - 1;
-            printf("Produto selecionado: %s\n", products[posicao].name);
-            printf("Quantidade em estoque: ");
-            if (scanf("%d", &temp) != 1 || temp < 0) {
-                mostrarErro("Quantidade invalida, a mesma deve ser maior ou igual a zero\n");
-            } else {
-                printf("Estoque atualizado com sucesso!\n");
-                products[posicao].quantidadeEstoque = temp;
-                break;
-            }
-        }
-    }
-}
-
-/* FUNCAO RESPONSAVEL PELA OPCAO 2, VISUALIZAR ESTOQUE */
-void mostrarEstoque(Product products[], int size) {
-    organizarListaId(products, size);
-    printf("\n-----------------------------------------------------------------\n");
-    printf("|%-12s|%-20s|%-12s|%-10s\t|\n", "CODIGO", "ITEM", "PRECO", "ESTOQUE");
-    printf("-----------------------------------------------------------------\n");
-    for (int i = 0; i < size; i++) {
-        printf("|%-12d|%-20s|R$%-10.2f|%-10d\t|\n", products[i].id, products[i].name, products[i].price, products[i].quantidadeEstoque);
-    }
-    printf("-----------------------------------------------------------------\n");
 }
 
 /* FUNCAO RESPONSAVEL POR VERIFICAR O ESTOQUE, PARA VER SE TODOS OS ITENS ESTAO INDISPONIVEIS */
