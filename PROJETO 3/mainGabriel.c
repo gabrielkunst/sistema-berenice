@@ -72,7 +72,7 @@ void removerUnderscore(Produto produtos[], int tamanho) {
 
 /* BUSCA OS PRODUTOS NO ARQUIVO TXT */
 void fetchProdutos(Produto **produtos, int *tamanho) {
-    FILE *file = fopen("C:\\Users\\GK\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\dist\\produtos.txt", "r");
+    FILE *file = fopen("C:\\Users\\Gabriel\\OneDrive\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\dist\\produtos.txt", "r");
     if (file == NULL) {
         printf("\nErro na leitura do arquivo!\n");
         system("pause");
@@ -104,7 +104,7 @@ void salvarProdutos(Produto produtos[], int tamanho) {
             }
         }
     }
-    FILE *file = fopen("C:\\Users\\GK\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\dist\\produtos.txt", "w");
+    FILE *file = fopen("C:\\Users\\Gabriel\\OneDrive\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\dist\\produtos.txt", "w");
     if (file == NULL) {
         printf("\nErro na leitura do arquivo!\n");
         system("pause");
@@ -254,7 +254,7 @@ bool verificarEstoque(Produto produtos[], int tamanho) {
             produtosVazios++;
         }
     }
-    return (produtosVazios == 5 ? true : false);
+    return (produtosVazios == tamanho ? true : false);
 }
 
 /* FUNCAO RESPONSAVEL PELA OPCAO 3, VENDER UM PRODUTO */
