@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* STRUCT QUE DEFINE OS PRODUTOS */
 typedef struct {
@@ -138,20 +139,31 @@ void printarTabelaProdutos(Produto produtos[], int tamanho) {
 }
 
 /* CADASTRA NOVOS PRODUTOS */
-void cadastrarProdutos(Produto **produtos, int *tamanho) {
+void cadastrarProdutos(Produto *produtos, int *tamanho) {
     int quantidadeParaCadastar = 0;
     printf("Quantidade de produtos a serem cadastrados: ");
     scanf("%d", &quantidadeParaCadastar);
-    *produtos = realloc(*produtos, (*tamanho + quantidadeParaCadastar) * sizeof(Produto *));
+    produtos = realloc(produtos, (*tamanho + quantidadeParaCadastar) * sizeof(Produto *));
     for (int i = *tamanho; i < (*tamanho + quantidadeParaCadastar); i++) {
-        printf("Digite as informacoes para o produto %d: \n", i + 1);
+        printf("Digite as informacoes para o produto %d: \n", i);
+        printf("ID: ");
+        scanf("%lf", &produtos[i].id);
+        getchar();
+        printf("Nome: ");
+        gets(produtos[i].nome);
+        printf("Preco: R$");
+        scanf("%lf", &produtos[i].preco);
+        printf("Estoque: ");
+        scanf("%d", &produtos[i].estoque);
+        produtos[i].vendidos = 0;
+        produtos[i].tempVendidos = 0;
     }
-    //*tamanho += quantidadeParaCadastar;
+    *tamanho += quantidadeParaCadastar;
 }
 
 /* FUNÇÕES DE VENDAS -------------------------------------- */
 /*FUNCAO RESPONSAVEL PELA RELATORIO DE VENDAS */
-void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float total) {
+void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float *total) {
     organizarListaId(produtos, tamanho);
     printf("\n-------------------------------------------------------------------------------------------------\n");
     printf("|                                  RELATORIO DE VENDAS                                          |\n");
@@ -162,7 +174,7 @@ void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float total) {
         printf("|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", produtos[i].id, produtos[i].nome, produtos[i].preco * produtos[i].vendidos, produtos[i].estoque, produtos[i].vendidos);
     }
     printf("-------------------------------------------------------------------------------------------------\n");
-    printf("|%30s|%-35s|R$%-18.2f\t|\n", "", "VALOR TOTAL VENDIDO", total);
+    printf("|%30s|%-35s|R$%-18.2f\t|\n", "", "VALOR TOTAL VENDIDO", *total);
     printf("-------------------------------------------------------------------------------------------------\n");
 }
 
@@ -239,7 +251,7 @@ void pagarCompra(Produto produtos[], int tamanho, float totalTemp, float *total)
                     }
                 }
             }
-            *total = totalTemp;
+            *total += totalTemp;
             resetarVendas(produtos, tamanho);
             break;
         }
@@ -332,7 +344,7 @@ void abrirSubmenuProdutos(Produto *produtos, int *tamanho) {
                     printarTabelaProdutos(produtos, *tamanho);
                     break;
                 case 2:
-                    printf("FUNCAO CADASTRAR\n");
+                    cadastrarProdutos(produtos, tamanho);
                     break;
                 case 3:
                     printf("FUNCAO ATUALIZAR\n");
@@ -357,8 +369,7 @@ void abrirSubmenuProdutos(Produto *produtos, int *tamanho) {
 /* FUNCAO RESPONSAVEL PELA OPCAO 2, VENDAS */
 void abrirSubmenuVendas(Produto *produtos, int *tamanho) {
     int opcaoMenu = 0;
-    float total = 0, *pTotal = NULL;
-    // float *ptotal = &total;
+    float total = 0, *pTotal = &total;
     while (opcaoMenu != 3) {
         printf("\n|     VENDAS    |\n");
         printf("[1] Realizar Venda\n[2] Relatorio de Vendas\n[3] Voltar\nDigite um valor: ");
@@ -370,7 +381,7 @@ void abrirSubmenuVendas(Produto *produtos, int *tamanho) {
                     realizarVenda(produtos, *tamanho, pTotal);
                     break;
                 case 2:
-                    mostrarRelatorioDeVendas(produtos, *tamanho, total);
+                    mostrarRelatorioDeVendas(produtos, *tamanho, pTotal);
                     break;
                 case 3:
                     printf("VOLTANDO AO MENU ...\n");
