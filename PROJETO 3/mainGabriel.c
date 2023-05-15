@@ -127,6 +127,7 @@ void salvarProdutos(Produto produtos[], int tamanho) {
 
 /* MOSTRA A TABELA NA TELA */
 void printarTabelaProdutos(Produto produtos[], int tamanho) {
+    organizarListaId(produtos, tamanho);
     printf("\n-----------------------------------------------------------------\n");
     printf("|                           PRODUTOS                            |\n");
     printf("-----------------------------------------------------------------\n");
