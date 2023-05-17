@@ -277,6 +277,17 @@ bool verificarEstoque(Produto produtos[], int tamanho) {
     return (produtosVazios == tamanho ? true : false);
     }
 
+/* FUNÇÃO RESPONSÁVEL POR VERIFICAR SE O ID DIGITADO EXISTE  */
+bool validarID(Produto produtos[], int tamanho, double id) {
+    bool idValido = false;
+    for (int i = 0; i < tamanho; i++) {
+        if (produtos[i].id == id) {
+            idValido = true;
+            }
+        }
+    return idValido;
+    }
+
 /* FUNCAO RESPONSAVEL PELA OPCAO 3, VENDER UM PRODUTO */
 void realizarVenda(Produto produtos[], int tamanho, float* total) {
     bool isEstoqueVazio = verificarEstoque(produtos, tamanho);
