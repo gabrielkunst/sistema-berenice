@@ -277,21 +277,75 @@ bool verificarEstoque(Produto produtos[], int tamanho) {
     return (produtosVazios == tamanho ? true : false);
     }
 
-/* FUNÇÃO RESPONSÁVEL POR VERIFICAR SE O ID DIGITADO EXISTE  */
-bool validarID(Produto produtos[], int tamanho, double id) {
-    bool idValido = false;
-    for (int i = 0; i < tamanho; i++) {
-        if (produtos[i].id == id) {
-            idValido = true;
+/* FUNÇÃO RESPONSÁVEL POR ATUALIZAR OS PRODUTOS  */
+void atualizarProdutos(Produto produtos[], int* tamanho) {
+    double produtoID = 0;
+    bool idExistente = false;
+    do {
+        printarTabelaProdutos(produtos, *tamanho);
+        printf("\nDigite o ID do produto: ");
+        if (scanf("%lf", &produtoID) != 1) {
+            mostrarErro("ID invalido");
             }
-        }
-    return idValido;
+        else {
+            int indexProduto = 0, i = 0;
+            for (; i < *tamanho; i++) {
+                if (produtos[i].id == produtoID) {
+                    idExistente = true;
+                    indexProduto = i;
+                    break;
+                    }
+                }
+            if (idExistente) {
+                if (idExistente) {
+                    int opcao = 0;
+                    printf("Produto selecionado => %s\n", produtos[indexProduto].nome);
+                    do {
+                        printf("O que voce deseja alterar?\n[1] Quantidade\n[2] Valor unitario\nDigite um valor: ");
+                        if (scanf("%d", &opcao) != 1 || (opcao != 1 && opcao != 2)) {
+                            mostrarErro("Valor invalido!");
+                            }
+                        else {
+                            if (opcao == 1) {
+                                int novoEstoque = 0;
+                                printf("Digite a nova quantidade: ");
+                                if (scanf("%d", &novoEstoque) != 1 || novoEstoque < 0) {
+                                    mostrarErro("Valor invalido!");
+                                    }
+                                else {
+                                    int opcao1 = 0;
+                                    do {
+                                        printf("[Antigo] => Estoque: %d\n[Novo] => Estoque: %d\n", produtos[indexProduto].estoque, novoEstoque);
+                                        printf("Tem certeza que deseja fazer esta alteracao? [1] SIM | [2] NAO => ");
+                                        if (scanf("%d", &opcao1) != 1 || opcao1 != 1 && opcao1 != 2) {
+                                            mostrarErro("Valor invalido!");
+                                            }
+                                        } while (opcao1 != 1 && opcao1 != 2);
+                                    }
+
+                                }
+                            else {
+                                float novoValor = 0;
+                                printf("Digite o novo valor: ");
+
+                                }
+                            }
+
+                        } while (opcao != 1 && opcao != 2);
+                    }
+                }
+            else {
+                printf("Nao existe um produto com o ID %0.lf!\n", produtoID);
+                }
+            }
+        } while (idExistente != false);
     }
+
 
 /* FUNCAO RESPONSAVEL PELA OPCAO 3, VENDER UM PRODUTO */
 void realizarVenda(Produto produtos[], int tamanho, float* total) {
     bool isEstoqueVazio = verificarEstoque(produtos, tamanho);
-    double idProduto = 0;
+    double idProduto = 0;0
     float totalTemp = 0;
     int opcaoMenu = 0, quantidade = 0;
 
