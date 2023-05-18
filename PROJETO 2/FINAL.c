@@ -236,7 +236,8 @@ void realizarVenda(Product products[], int size) {
         }
         mostrarNotaFiscal(products, size);
         pagarCompra(products, size);
-    } else {
+    } else 
+    {
         printf("Primeiro cadastre os produtos!\n");
     }
 }

@@ -73,7 +73,7 @@ void removerUnderscore(Produto produtos[], int tamanho) {
 
 /* BUSCA OS PRODUTOS NO ARQUIVO TXT */
 void fetchProdutos(Produto** produtos, int* tamanho) {
-    FILE* file = fopen("C:\\Users\\Gabriel\\OneDrive\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\dist\\produtos.txt", "r");
+    FILE* file = fopen("produtos.txt", "r");
     if (file == NULL) {
         printf("\nErro na leitura do arquivo!\n");
         system("pause");
@@ -105,7 +105,7 @@ void salvarProdutos(Produto produtos[], int tamanho) {
                 }
             }
         }
-    FILE* file = fopen("C:\\Users\\Gabriel\\OneDrive\\Documents\\GitHub\\sistema-berenice\\PROJETO 3\\dist\\produtos.txt", "w");
+    FILE* file = fopen("produtos.txt", "w");
     if (file == NULL) {
         printf("\nErro na leitura do arquivo!\n");
         system("pause");
@@ -278,7 +278,7 @@ bool verificarEstoque(Produto produtos[], int tamanho) {
     }
 
 /* FUNÇÃO RESPONSÁVEL POR ATUALIZAR OS PRODUTOS  */
-void atualizarProdutos(Produto produtos[], int* tamanho) {
+/* void atualizarProdutos(Produto produtos[], int* tamanho) {
     double produtoID = 0;
     bool idExistente = false;
     do {
@@ -338,17 +338,109 @@ void atualizarProdutos(Produto produtos[], int* tamanho) {
                 printf("Nao existe um produto com o ID %0.lf!\n", produtoID);
                 }
             }
-        } while (idExistente != false);
-    }
+        } 
+        while (idExistente != false);
+    } */
 
+bool validarID(Produto produtos[], int tamanho,double id, int *pIndexProduto) {
+    bool idValido = false;
+    for (int i = 0; i < tamanho; i++) {
+        if(produtos[i].id == id) {
+            idValido = true;
+            *pIndexProduto = i;
+        }
+    }
+    return idValido;
+}
+
+/* FUNCAO RESPONSAVEL POR ATUALIZAR OS PRODUTOS */
+void atualizarProdutos(Produto produtos[], int tamanho) {
+    double idProduto = 0;
+    bool idValido = false, operacaoConcluida = false;
+    int indexProduto = 0, *pIndexProduto = &indexProduto;
+    int opcaoEscolhida = 0, novoEstoque = 0; 
+    float novoValorUnitario = 0;
+    do {   
+        printarTabelaProdutos(produtos, tamanho);
+        printf("Digite o ID do produto: ");
+        if(scanf("%lf", &idProduto) != 1) {
+            mostrarErro("ID invalido!\n");
+        } else {
+            idValido = validarID(produtos, tamanho, idProduto, pIndexProduto);
+            if (idValido) {
+                printf("Produto selecionado => %s\n", produtos[indexProduto].nome);
+                do {
+                    printf("[1] Quantidade\n[2] Valor Unitario\nO que voce deseja alterar?");
+                    if ((scanf("%d", &opcaoEscolhida) != 1) || (opcaoEscolhida != 1 && opcaoEscolhida != 2)) {
+                        mostrarErro("Valor invalido!\n");
+                    } else {
+                        if (opcaoEscolhida == 1) {
+                            printf("\nVoce escolheu mudar a quantidade.\n");
+                            do {
+                                opcaoEscolhida = 0;
+                                printf("Digite a nova quantidade: ");
+                                if (scanf("%d", &novoEstoque) != 1 || novoEstoque < 0) {
+                                    mostrarErro("Valor invalido!\n");
+                                } else {
+                                    do {
+                                        printf("[ESTOQUE ANTIGO] => %d\n[ESTOQUE NOVO] => %d\nVoce deseja fazer a alteracao acima? [1] SIM | [2] NAO: ", produtos[indexProduto].estoque, novoEstoque);
+                                        if ((scanf("%d", &opcaoEscolhida) != 1) || (opcaoEscolhida != 1 && opcaoEscolhida != 2)) {
+                                            mostrarErro("Valor invalido!\n");
+                                        } else {
+                                            if (opcaoEscolhida == 1) {
+                                                produtos[indexProduto].estoque = novoEstoque;
+                                                printf("Alteracao feita com sucesso!\n");
+                                            } else {
+                                                printf("Alteracao cancelada!\n");
+                                            }
+                                            operacaoConcluida = true;
+                                            break;
+                                        }
+                                    } while(opcaoEscolhida != 1 && opcaoEscolhida != 2);
+                                    
+                                } 
+                            } while(opcaoEscolhida != 1 && opcaoEscolhida != 2);
+                        } else {
+                            printf("\nVoce escolheu mudar o valor unitario.\n");
+                            do {
+                                opcaoEscolhida = 0;
+                                printf("Digite o novo valor: ");
+                                if (scanf("%f", &novoValorUnitario) != 1 || novoValorUnitario < 0) {
+                                    mostrarErro("Valor invalido!\n");
+                                } else {
+                                    do {  
+                                        printf("[VALOR ANTIGO] => R$ %.2f\n[VALOR NOVO] => R$ %.2f\nVoce deseja fazer a alteracao acima? [1] SIM | [2] NAO: ", produtos[indexProduto].preco, novoValorUnitario);
+                                        if ((scanf("%d", &opcaoEscolhida) != 1) || (opcaoEscolhida != 1 && opcaoEscolhida != 2)) {
+                                            mostrarErro("Valor invalido!\n");
+                                        } else {
+                                            if (opcaoEscolhida == 1) {
+                                                produtos[indexProduto].preco = novoValorUnitario;
+                                                printf("Alteracao feita com sucesso!\n");
+                                            } else {
+                                                printf("Alteracao cancelada!\n");
+                                            }
+                                            operacaoConcluida = true;
+                                            break;
+                                        }
+                                    } while(opcaoEscolhida != 1 && opcaoEscolhida != 2);
+                                }
+                            }  while(opcaoEscolhida != 1 && opcaoEscolhida != 2);
+                        }
+                    }
+                } while(operacaoConcluida == false);
+            } else {
+                printf("ID invalido!\n");
+            }
+        }
+    } while(opcaoEscolhida != 1 && opcaoEscolhida != 2);
+}
 
 /* FUNCAO RESPONSAVEL PELA OPCAO 3, VENDER UM PRODUTO */
 void realizarVenda(Produto produtos[], int tamanho, float* total) {
     bool isEstoqueVazio = verificarEstoque(produtos, tamanho);
-    double idProduto = 0;0
+    double idProduto = 0;
     float totalTemp = 0;
     int opcaoMenu = 0, quantidade = 0;
-
     if (!isEstoqueVazio) {
         while (!isEstoqueVazio && (opcaoMenu != 2)) {
             printarTabelaProdutos(produtos, tamanho);
@@ -426,7 +518,7 @@ void abrirSubmenuProdutos(Produto* produtos, int* tamanho) {
                     cadastrarProdutos(produtos, tamanho);
                     break;
                 case 3:
-                    atualizarProdutos(produtos, tamanho);
+                    atualizarProdutos(produtos, *tamanho);
                     break;
                 case 4:
                     printf("FUNCAO EXCLUIR\n");

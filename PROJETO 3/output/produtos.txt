@@ -2,7 +2,7 @@
 1
 Pao_de_Forma
 7.50
-68
+0
 2
 2
 Pao_de_Centeio
