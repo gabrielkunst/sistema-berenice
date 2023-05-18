@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* STRUCT QUE DEFINE OS PRODUTOS */
 typedef struct {
     double id;
     char nome[50];
@@ -13,8 +12,6 @@ typedef struct {
     int tempVendidos;
     } Produto;
 
-/* FUNÇÕES GERAIS */
-/* MOSTRA ERRO */
 void mostrarErro(char message[]) {
     printf("%s\n", message);
     while (getchar() != '\n') {
@@ -22,7 +19,6 @@ void mostrarErro(char message[]) {
         }
     }
 
-/* FUNCAO RESPONSAVEL POR ORGANIZAR A LISTA DE MAIOR SUBTOTAL PARA MENOR */
 void organizarListaSubtotal(Produto produtos[], int tamanho) {
     Produto temp;
     for (int i = 0; i < tamanho; i++) {
@@ -36,7 +32,6 @@ void organizarListaSubtotal(Produto produtos[], int tamanho) {
         }
     }
 
-/* FUNCAO RESPONSAVEL POR ORGANIZAR A LISTA DO MENOR ID PARA O MAIOR ID */
 void organizarListaId(Produto produtos[], int tamanho) {
     Produto temp;
     for (int i = 0; i < tamanho; i++) {
@@ -50,7 +45,6 @@ void organizarListaId(Produto produtos[], int tamanho) {
         }
     }
 
-/* FUNCAO PARA RESETAR AS VENDAS POS PAGAMENTO */
 void resetarVendas(Produto produtos[], int tamanho) {
     for (int i = 0; i < tamanho; i++) {
         produtos[i].vendidos += produtos[i].tempVendidos;
@@ -58,8 +52,6 @@ void resetarVendas(Produto produtos[], int tamanho) {
         }
     }
 
-/* FUNÇÕES DOS PRODUTOS --------------------------------------------------------*/
-/* REMOVE '_' DO NOME DO PRODUTO AO DAR FETCH NO ARQUIVO */
 void removerUnderscore(Produto produtos[], int tamanho) {
     for (int i = 0; i < tamanho; i++) {
         char* nome = produtos[i].nome;
@@ -71,7 +63,6 @@ void removerUnderscore(Produto produtos[], int tamanho) {
         }
     }
 
-/* BUSCA OS PRODUTOS NO ARQUIVO TXT */
 void fetchProdutos(Produto** produtos, int* tamanho) {
     FILE* file = fopen("produtos.txt", "r");
     if (file == NULL) {
@@ -94,7 +85,6 @@ void fetchProdutos(Produto** produtos, int* tamanho) {
     removerUnderscore(*produtos, *tamanho);
     }
 
-/* SALVA A LISTA ATUAL NO ARQUIVO TXT */
 void salvarProdutos(Produto produtos[], int tamanho) {
     Produto tempProdutos[tamanho];
     for (int i = 0; i < tamanho; i++) {
@@ -125,7 +115,6 @@ void salvarProdutos(Produto produtos[], int tamanho) {
     printf("Dados salvos com sucesso!\n");
     }
 
-/* MOSTRA A TABELA NA TELA */
 void printarTabelaProdutos(Produto produtos[], int tamanho) {
     organizarListaId(produtos, tamanho);
     printf("\n-----------------------------------------------------------------\n");
@@ -139,7 +128,6 @@ void printarTabelaProdutos(Produto produtos[], int tamanho) {
     printf("-----------------------------------------------------------------\n");
     }
 
-/* CADASTRA NOVOS PRODUTOS */
 void cadastrarProdutos(Produto* produtos, int* tamanho) {
     int quantidadeParaCadastar = 0;
     printf("Quantidade de produtos a serem cadastrados: ");
@@ -162,8 +150,6 @@ void cadastrarProdutos(Produto* produtos, int* tamanho) {
     *tamanho += quantidadeParaCadastar;
     }
 
-/* FUNÇÕES DE VENDAS -------------------------------------- */
-/*FUNCAO RESPONSAVEL PELA RELATORIO DE VENDAS */
 void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float* total) {
     organizarListaId(produtos, tamanho);
     printf("\n-------------------------------------------------------------------------------------------------\n");
@@ -179,7 +165,6 @@ void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float* total) {
     printf("-------------------------------------------------------------------------------------------------\n");
     }
 
-/* FUNCAO PARA MOSTRAR A NOTA FISCAL */
 void mostrarNotaFiscal(Produto produtos[], int tamanho, float total) {
     float totalTemp = total;
     organizarListaSubtotal(produtos, tamanho);
@@ -200,7 +185,6 @@ void mostrarNotaFiscal(Produto produtos[], int tamanho, float total) {
     printf("----------------------------------------------------------------------------\n");
     }
 
-/* FUNCAO PARA ESCOLHA DO METODO DE PAGAMENTO */
 void pagarCompra(Produto produtos[], int tamanho, float totalTemp, float* total) {
     int metodo = 0, parcelas = 0;
     float totalRecebido = 0, troco = 0;
@@ -266,7 +250,6 @@ void pagarCompra(Produto produtos[], int tamanho, float totalTemp, float* total)
         }
     }
 
-/* FUNCAO RESPONSAVEL POR VERIFICAR O ESTOQUE, PARA VER SE TODOS OS ITENS ESTAO INDISPONIVEIS */
 bool verificarEstoque(Produto produtos[], int tamanho) {
     int produtosVazios = 0;
     for (int i = 0; i < tamanho; i++) {
@@ -276,71 +259,6 @@ bool verificarEstoque(Produto produtos[], int tamanho) {
         }
     return (produtosVazios == tamanho ? true : false);
     }
-
-/* FUNÇÃO RESPONSÁVEL POR ATUALIZAR OS PRODUTOS  */
-/* void atualizarProdutos(Produto produtos[], int* tamanho) {
-    double produtoID = 0;
-    bool idExistente = false;
-    do {
-        printarTabelaProdutos(produtos, *tamanho);
-        printf("\nDigite o ID do produto: ");
-        if (scanf("%lf", &produtoID) != 1) {
-            mostrarErro("ID invalido");
-            }
-        else {
-            int indexProduto = 0, i = 0;
-            for (; i < *tamanho; i++) {
-                if (produtos[i].id == produtoID) {
-                    idExistente = true;
-                    indexProduto = i;
-                    break;
-                    }
-                }
-            if (idExistente) {
-                if (idExistente) {
-                    int opcao = 0;
-                    printf("Produto selecionado => %s\n", produtos[indexProduto].nome);
-                    do {
-                        printf("O que voce deseja alterar?\n[1] Quantidade\n[2] Valor unitario\nDigite um valor: ");
-                        if (scanf("%d", &opcao) != 1 || (opcao != 1 && opcao != 2)) {
-                            mostrarErro("Valor invalido!");
-                            }
-                        else {
-                            if (opcao == 1) {
-                                int novoEstoque = 0;
-                                printf("Digite a nova quantidade: ");
-                                if (scanf("%d", &novoEstoque) != 1 || novoEstoque < 0) {
-                                    mostrarErro("Valor invalido!");
-                                    }
-                                else {
-                                    int opcao1 = 0;
-                                    do {
-                                        printf("[Antigo] => Estoque: %d\n[Novo] => Estoque: %d\n", produtos[indexProduto].estoque, novoEstoque);
-                                        printf("Tem certeza que deseja fazer esta alteracao? [1] SIM | [2] NAO => ");
-                                        if (scanf("%d", &opcao1) != 1 || opcao1 != 1 && opcao1 != 2) {
-                                            mostrarErro("Valor invalido!");
-                                            }
-                                        } while (opcao1 != 1 && opcao1 != 2);
-                                    }
-
-                                }
-                            else {
-                                float novoValor = 0;
-                                printf("Digite o novo valor: ");
-
-                                }
-                            }
-
-                        } while (opcao != 1 && opcao != 2);
-                    }
-                }
-            else {
-                printf("Nao existe um produto com o ID %0.lf!\n", produtoID);
-                }
-            }
-        } 
-        while (idExistente != false);
-    } */
 
 bool validarID(Produto produtos[], int tamanho,double id, int *pIndexProduto) {
     bool idValido = false;
@@ -353,7 +271,6 @@ bool validarID(Produto produtos[], int tamanho,double id, int *pIndexProduto) {
     return idValido;
 }
 
-/* FUNCAO RESPONSAVEL POR ATUALIZAR OS PRODUTOS */
 void atualizarProdutos(Produto produtos[], int tamanho) {
     double idProduto = 0;
     bool idValido = false, operacaoConcluida = false;
@@ -435,7 +352,46 @@ void atualizarProdutos(Produto produtos[], int tamanho) {
     } while(opcaoEscolhida != 1 && opcaoEscolhida != 2);
 }
 
-/* FUNCAO RESPONSAVEL PELA OPCAO 3, VENDER UM PRODUTO */
+void lerProdutos(Produto *produtos, int *tamanho) {
+    if (!(*tamanho == 0)) {
+        printf("Resetando a lista...\n");
+    } else {
+        printf("Lista de produtos nao existe!\n");
+    }
+}
+    
+void excluirProdutos(Produto *produtos, int *tamanho) {
+    int id = 0, indice = 0, *pIndice = &indice;
+    bool idValido = false;
+    printf("Informe o ID do produto que voce deseja excluir: ");
+    scanf("%d", &id);
+    getchar();
+    idValido = validarID(produtos, *tamanho, id, pIndice);
+    if (!idValido) {
+        printf("Produto nao encontrado na lista\n");
+        system("Pause");
+        return;
+    }
+    FILE *file = fopen("produtos.txt", "w");
+    if (file == NULL) {
+        printf("\nErro na leitura do arquivo!\n");
+        system("Pause");
+        exit(1);
+    }
+    fclose(file);
+    for (int i = indice; i < (*tamanho - 1); i++) {
+        produtos[i] = produtos[i + 1];
+    }
+    *tamanho -= 1;
+    produtos = realloc(produtos, (*tamanho) * sizeof(Produto));
+    if (produtos == NULL) {
+        printf("\nErro na realocacao de memoria!\n");
+        system("Pause");
+        exit(1);
+    }
+    printf("Produto excluido.\n");
+}
+
 void realizarVenda(Produto produtos[], int tamanho, float* total) {
     bool isEstoqueVazio = verificarEstoque(produtos, tamanho);
     double idProduto = 0;
@@ -499,8 +455,6 @@ void realizarVenda(Produto produtos[], int tamanho, float* total) {
         }
     }
 
-/* FUNÇÕES PRINCIPAIS */
-/* FUNCAO RESPONSAVEL PELA OPCAO 1, PRODUTOS */
 void abrirSubmenuProdutos(Produto* produtos, int* tamanho) {
     int opcaoMenu = 0;
     while (opcaoMenu != 7) {
@@ -521,13 +475,13 @@ void abrirSubmenuProdutos(Produto* produtos, int* tamanho) {
                     atualizarProdutos(produtos, *tamanho);
                     break;
                 case 4:
-                    printf("FUNCAO EXCLUIR\n");
+                    excluirProdutos(produtos, tamanho);
                     break;
                 case 5:
                     salvarProdutos(produtos, *tamanho);
                     break;
                 case 6:
-                    printf("FUNCAO LER\n");
+                    lerProdutos(produtos, tamanho);
                     break;
                 case 7:
                     printf("VOLTANDO AO MENU...\n");
@@ -537,7 +491,6 @@ void abrirSubmenuProdutos(Produto* produtos, int* tamanho) {
         }
     }
 
-/* FUNCAO RESPONSAVEL PELA OPCAO 2, VENDAS */
 void abrirSubmenuVendas(Produto* produtos, int* tamanho) {
     int opcaoMenu = 0;
     float total = 0, * pTotal = &total;
@@ -563,12 +516,10 @@ void abrirSubmenuVendas(Produto* produtos, int* tamanho) {
         }
     }
 
-/* FUNCAO RESPONSAVEL PELA OPCAO 3, SAIR DO PROGRAMA */
 void fecharAplicativo() {
     exit(1);
     }
 
-/* FUNÇÃO PRINCIPAL */
 int main() {
     int tamanho = 0, * ptamanho = &tamanho, opcaoMenu = 0;
     Produto* produtos = NULL;
@@ -597,4 +548,4 @@ int main() {
     free(produtos);
     produtos = NULL;
     return 0;
-    }
+}
