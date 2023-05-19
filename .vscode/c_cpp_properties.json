@@ -3,7 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/PROJETO 3/output"
             ],
             "defines": [
                 "_DEBUG",
@@ -13,8 +14,7 @@
             "compilerPath": "C:\\MinGW\\bin\\gcc.exe",
             "cStandard": "c11",
             "cppStandard": "gnu++14",
-            "intelliSenseMode": "windows-gcc-x86",
-            
+            "intelliSenseMode": "windows-gcc-x86"
         }
     ],
     "version": 4

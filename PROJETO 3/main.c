@@ -1,3 +1,4 @@
+#include "teste.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -523,8 +524,9 @@ void fecharAplicativo() {
 int main() {
     int tamanho = 0, * ptamanho = &tamanho, opcaoMenu = 0;
     Produto* produtos = NULL;
+    teste();
     fetchProdutos(&produtos, ptamanho);
-    while (1) {
+    while (1) { 
         printf("\n|     MENU    |\n");
         printf("[1] Produtos\n[2] Vendas\n[3] Sair\nDigite um valor: ");
         if (scanf("%d", &opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 3) {
