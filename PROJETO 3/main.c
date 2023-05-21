@@ -11,14 +11,14 @@ typedef struct {
     int estoque;
     int vendidos;
     int tempVendidos;
-    } Produto;
+} Produto;
 
 void mostrarErro(char message[]) {
     printf("%s\n", message);
     while (getchar() != '\n') {
         continue;
-        }
     }
+}
 
 void organizarListaSubtotal(Produto produtos[], int tamanho) {
     Produto temp;
@@ -46,27 +46,23 @@ void organizarListaId(Produto produtos[], int tamanho) {
         }
     }
 
-void fetchProdutosFromFile(Produto** produtos, int* tamanho) {
+void lerProdutosDoArquivo(Produto** produtos, int* tamanho) {
     FILE* file = fopen("produtos.bin", "rb");
     if (file == NULL) {
         printf("Erro ao abrir o arquivo.\n");
         return;
     }
-
-    fread(tamanho, sizeof(int), 1, file); // Read the size of the list
-
+    fread(tamanho, sizeof(int), 1, file);
     *produtos = (Produto*)malloc(*tamanho * sizeof(Produto));
     if (*produtos == NULL) {
         printf("Erro ao alocar memoria.\n");
         fclose(file);
         return;
     }
-
     for (int i = 0; i < *tamanho; i++) {
-        fread(&(*produtos)[i], sizeof(Produto), 1, file); // Read each product from the file
+        fread(&(*produtos)[i], sizeof(Produto), 1, file); 
     }
-
-    fclose(file); // Fix: Add fclose(file) to close the file after reading
+    fclose(file);
 }
 
 void resetarVendas(Produto produtos[], int tamanho) {
@@ -103,11 +99,9 @@ void printarTabelaProdutos(Produto produtos[], int tamanho) {
 
 void cadastrarProdutos(Produto** produtos, int* tamanho) {
     int i, j, quantidadeParaCadastar = 0;
-
     printf("Quantidade de produtos a serem cadastrados: ");
     scanf("%d", &quantidadeParaCadastar);
     getchar();
-
     *produtos = realloc(*produtos, (*tamanho + quantidadeParaCadastar) * sizeof(Produto));
     for (i = *tamanho; i < (*tamanho + quantidadeParaCadastar); i++) {
         bool idValido = false;
@@ -116,7 +110,6 @@ void cadastrarProdutos(Produto** produtos, int* tamanho) {
             printf("ID: ");
             scanf("%lf", &(*produtos)[i].id);
             getchar();
-
             idValido = true;
             for (j = 0; j < *tamanho; j++) {
                 if ((*produtos)[j].id == (*produtos)[i].id) {
@@ -129,7 +122,6 @@ void cadastrarProdutos(Produto** produtos, int* tamanho) {
         printf("Nome: ");
         fgets((*produtos)[i].nome, sizeof((*produtos)[i].nome), stdin);
         (*produtos)[i].nome[strcspn((*produtos)[i].nome, "\n")] = '\0';
-
         bool precoValido = false;
         while (!precoValido) {
             printf("Preco: R$");
@@ -140,7 +132,6 @@ void cadastrarProdutos(Produto** produtos, int* tamanho) {
                 precoValido = true;
             }
         }
-
         bool estoqueValido = false;
         while (!estoqueValido) {
             printf("Estoque: ");
@@ -154,7 +145,6 @@ void cadastrarProdutos(Produto** produtos, int* tamanho) {
         (*produtos)[i].vendidos = 0;
         (*produtos)[i].tempVendidos = 0;
     }
-
     *tamanho += quantidadeParaCadastar;
     if (quantidadeParaCadastar == 1) {
         printf("\nO produto %s foi cadastrado.\n", (*produtos)[i - 1].nome);
@@ -169,13 +159,10 @@ void cadastrarProdutos(Produto** produtos, int* tamanho) {
 void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float* total) {
     time_t a_m_d_h_m_s = time(NULL);
     struct tm *tempo = localtime(&a_m_d_h_m_s);
-
     char data[25];
     strftime(data, sizeof(data), "%y-%m-%d_%H-%M-%S", tempo);
-
     char vendas[25];
     snprintf(vendas, sizeof(vendas), "%s.txt", data);
-
     FILE *file;
     file = fopen(vendas, "w");
     if (file == NULL) {
@@ -183,36 +170,29 @@ void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float* total) {
         system("pause");
         exit(1);
     }
-
     printf("\n-------------------------------------------------------------------------------------------------\n");
     printf("|                                  RELATORIO DE VENDAS                                          |\n");
     printf("-------------------------------------------------------------------------------------------------\n");
     printf("|%-12s|%-17s|%-19s|%-15s|%-15s\t|\n", "CODIGO", "ITEM", "VALOR TOTAL POR UN.", "ESTOQUE FINAL", "QUANTIDADE VENDIDA POR UN.");
     printf("-------------------------------------------------------------------------------------------------\n");
-
     fprintf(file, "-------------------------------------------------------------------------------------------------\n");
     fprintf(file, "|                                  RELATORIO DE VENDAS                                          |\n");
     fprintf(file, "-------------------------------------------------------------------------------------------------\n");
     fprintf(file, "|%-12s|%-17s|%-19s|%-15s|%-15s\t|\n", "CODIGO", "ITEM", "VALOR TOTAL POR UN.", "ESTOQUE FINAL", "QUANTIDADE VENDIDA POR UN.");
     fprintf(file, "-------------------------------------------------------------------------------------------------\n");
-
     for (int i = 0; i < tamanho; i++) {
         printf("|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", produtos[i].id, produtos[i].nome, produtos[i].preco * 
 		produtos[i].vendidos, produtos[i].estoque, produtos[i].vendidos);
 		fprintf(file, "|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", produtos[i].id, produtos[i].nome, produtos[i].preco * 
 		produtos[i].vendidos, produtos[i].estoque, produtos[i].vendidos);
     }
-
     printf("-------------------------------------------------------------------------------------------------\n");
     printf("|%30s|%-35s|R$%-18.2f\t\t\t|\n", "", "VALOR TOTAL VENDIDO", *total);
     printf("-------------------------------------------------------------------------------------------------\n");
-
     fprintf(file, "-------------------------------------------------------------------------------------------------\n");
     fprintf(file, "|%30s|%-35s|R$%-18.2f\t|\n", "", "VALOR TOTAL VENDIDO", *total);
     fprintf(file, "-------------------------------------------------------------------------------------------------\n");
-
     fclose(file);
-
     printf("Relatorio criado e salvo no arquivo: %s\n", vendas);
 }
 
@@ -403,13 +383,10 @@ void atualizarProdutos(Produto produtos[], int tamanho) {
     } while(opcaoEscolhida != 1 && opcaoEscolhida != 2);
 }
 
-void deleteAndReloadProdutos(Produto** produtos, int* tamanho) {
-    free(*produtos);  // Free the memory allocated for the current list of products
-    *tamanho = 0;  // Reset the size of the list to 0
-
-    // Call the fetchProdutosFromFile function to reload the products from the file
-    fetchProdutosFromFile(produtos, tamanho);
-
+void deletarERelerArquivo(Produto** produtos, int* tamanho) {
+    free(*produtos);  
+    *tamanho = 0; 
+    lerProdutosDoArquivo(produtos, tamanho);
     printf("Produtos deletados e recarregados com sucesso!\n");
 }
 
@@ -425,7 +402,6 @@ void excluirProdutos(Produto *produtos, int *tamanho) {
 			mostrarErro("Produto nao encontrado.\n");
 			}
 		}while (idValido == false);
-		
 		int opcao = 0;
 		do {
 			printf("Deseja realmente excluir o produto %s? [1] SIM | [2] NAO: ", produtos[indice].nome);
@@ -539,7 +515,7 @@ void abrirSubmenuProdutos(Produto* produtos, int* tamanho) {
                     salvarProdutos(produtos, *tamanho);
                     break;
                 case 6:
-                    deleteAndReloadProdutos(&produtos, tamanho);
+                    deletarERelerArquivo(&produtos, tamanho);
                     break;
                 case 7:
                     printf("VOLTANDO AO MENU...\n");
@@ -582,7 +558,7 @@ void fecharAplicativo(Produto* produtos) {
 int main() {
     int tamanho = 0, * ptamanho = &tamanho, opcaoMenu = 0;
     Produto* produtos = NULL;
-    fetchProdutosFromFile(&produtos, ptamanho);
+    lerProdutosDoArquivo(&produtos, ptamanho);
     while (1) { 
         printf("\n|     MENU    |\n");
         printf("[1] Produtos\n[2] Vendas\n[3] Sair\nDigite um valor: ");
