@@ -138,16 +138,15 @@ void cadastrarProdutos(Produto** produtos, int* tamanho) {
                         }
                     }
                 } while(!idValido);
+
+
                 do {
-                    printf("Nome: ");
-                    if(fgets(nomeProduto, MAX_NAME_LENGTH, stdin) == NULL || nomeProduto[0] == '\n') {
-                        mostrarErro("Nome invalido! Nome nao pode ser vazio...\n");
-                    } else {
-                        nomeProduto[strcspn(nomeProduto, "\n")] = '\0';  // remove newline character
-                        strncpy((*produtos)[i].nome, nomeProduto, MAX_NAME_LENGTH);
-                        nomeValido = true;
-                    }
+                    /* code here */ 
                 } while(!nomeValido);
+
+
+
+
                 do {
                     printf("Preco: R$");
                     if(scanf("%lf", &precoProduto) != 1 || precoProduto < 0) {
@@ -417,20 +416,18 @@ void excluirProdutos(Produto *produtos, int *tamanho) {
         printf("Informe o ID do produto que voce deseja excluir: ");
         if(scanf("%lf", &id) != 1) {
             mostrarErro("ID invalido! Tente novamente...\n");
-            while(getchar() != '\n');  // clear input buffer
         } else {
             idValido = validarID(produtos, *tamanho, id, &indice); 
-		    if (!idValido) {
-			    mostrarErro("Produto nao encontrado.\n");
-		    }
+            if (!idValido) {
+                printf("Produto nao encontrado.\n");
+            }
         }
-	}while (idValido == false);
+	} while (idValido == false);
 	int opcao = 0;
 	do {
         printf("Deseja realmente excluir o produto %s? [1] SIM | [2] NAO: ", produtos[indice].nome);
         if((scanf("%d", &opcao) != 1) || (opcao != 1 && opcao != 2)){
             mostrarErro("Valor invalido!\n");
-            while(getchar() != '\n');  // clear input buffer
         } else if (opcao == 1) {
             for (int i = indice; i < (*tamanho - 1); i++) {
                 produtos[i] = produtos[i + 1];
