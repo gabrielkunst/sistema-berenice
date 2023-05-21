@@ -390,7 +390,7 @@ void deletarERelerArquivo(Produto** produtos, int* tamanho) {
 }
 
 void excluirProdutos(Produto *produtos, int *tamanho) {
-    int i, id = 0, indice = -1, *pIndice = &indice;
+    int id = 0, indice = -1, *pIndice = &indice, opcao = 0;
     bool idValido = false;
     printarTabelaProdutos(produtos, *tamanho);
     do {
@@ -399,30 +399,28 @@ void excluirProdutos(Produto *produtos, int *tamanho) {
         idValido = validarID(produtos, *tamanho, id, pIndice); 
 		if (!idValido) {
 			mostrarErro("Produto nao encontrado.\n");
+		}
+	}while (idValido == false);
+	do {
+        printf("Deseja realmente excluir o produto %s? [1] SIM | [2] NAO: ", produtos[indice].nome);
+        if((scanf("%d", &opcao) != 1) || (opcao != 1 && opcao != 2)){
+            mostrarErro("Valor invalido!\n");
+        } else if (opcao == 1) {
+            Produto produtoExcluido = produtos[indice];
+            for (int i = indice; i < (*tamanho - 1); i++) {
+                produtos[i] = produtos[i + 1];
+            }
+            *tamanho -= 1;
+            produtos = realloc(produtos, (*tamanho) * sizeof(Produto));
+            if (produtos == NULL) {
+                mostrarErro("\nErro na realocacao de memoria!\n");
+                exit(1);
+            }
+            printf("\nO produto %s foi excluido.\n", produtoExcluido.nome);
+        } else {
+            printf("\nA exclusao do produto foi cancelada.\n");
         }
-		}while (idValido == false);
-		int opcao = 0;
-		do {
-			printf("Deseja realmente excluir o produto %s? [1] SIM | [2] NAO: ", produtos[indice].nome);
-			if((scanf("%d", &opcao) != 1) || (opcao != 1 && opcao != 2)){
-				mostrarErro("Valor invalido!\n");
-			} else if (opcao == 1) {
-					Produto produtoExcluido = produtos[indice];
-					for (i = indice; i < (*tamanho - 1); i++) {
-						produtos[i] = produtos[i + 1];
-					}
-					*tamanho -= 1;
-					produtos = realloc(produtos, (*tamanho) * sizeof(Produto));
-					if (produtos == NULL) {
-						mostrarErro("\nErro na realocacao de memoria!\n");
-						system("Pause");
-						exit(1);
-					}
-					printf("\nO produto %s foi excluido.\n", produtoExcluido.nome);
-				}else {
-					printf("\nA exclusao do produto foi cancelada.\n");
-				}
-        } while(opcao != 1 && opcao != 2);		
+    } while(opcao != 1 && opcao != 2);		
 }
 
 void realizarVenda(Produto produtos[], int tamanho, float* total) {
