@@ -28,10 +28,10 @@ void organizarListaSubtotal(Produto produtos[], int tamanho) {
                 temp = produtos[i];
                 produtos[i] = produtos[j];
                 produtos[j] = temp;
-                }
             }
         }
     }
+}
 
 void organizarListaId(Produto produtos[], int tamanho) {
     Produto temp;
@@ -41,23 +41,23 @@ void organizarListaId(Produto produtos[], int tamanho) {
                 temp = produtos[i];
                 produtos[i] = produtos[j];
                 produtos[j] = temp;
-                }
             }
         }
     }
+}
 
 void lerProdutosDoArquivo(Produto** produtos, int* tamanho) {
     FILE* file = fopen("produtos.bin", "rb");
     if (file == NULL) {
         printf("Erro ao abrir o arquivo.\n");
-        return;
+        exit(1);
     }
     fread(tamanho, sizeof(int), 1, file);
     *produtos = (Produto*)malloc(*tamanho * sizeof(Produto));
     if (*produtos == NULL) {
         printf("Erro ao alocar memoria.\n");
         fclose(file);
-        return;
+        exit(1);
     }
     for (int i = 0; i < *tamanho; i++) {
         fread(&(*produtos)[i], sizeof(Produto), 1, file); 
@@ -69,14 +69,14 @@ void resetarVendas(Produto produtos[], int tamanho) {
     for (int i = 0; i < tamanho; i++) {
         produtos[i].vendidos += produtos[i].tempVendidos;
         produtos[i].tempVendidos = 0;
-        }
     }
+}
 
 void salvarProdutos(Produto produtos[], int tamanho) {
     FILE* file = fopen("produtos.bin", "wb");
     if (file == NULL) {
         printf("Erro ao abrir o arquivo!\n");
-        return;
+        exit(1);
     }
     fwrite(&tamanho, sizeof(int), 1, file);
     fwrite(produtos, sizeof(Produto), tamanho, file);
@@ -93,9 +93,9 @@ void printarTabelaProdutos(Produto produtos[], int tamanho) {
     printf("-----------------------------------------------------------------\n");
     for (int i = 0; i < tamanho; i++) {
         printf("|%-12.0lf|%-20s|R$%-10.2lf|%-10d\t|\n", produtos[i].id, produtos[i].nome, produtos[i].preco, produtos[i].estoque);
-        }
-    printf("-----------------------------------------------------------------\n");
     }
+    printf("-----------------------------------------------------------------\n");
+}
 
 void cadastrarProdutos(Produto** produtos, int* tamanho) {
     int i, j, quantidadeParaCadastar = 0;
@@ -167,7 +167,6 @@ void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float* total) {
     file = fopen(vendas, "w");
     if (file == NULL) {
         printf("Erro ao criar o arquivo com o relatorio.");
-        system("pause");
         exit(1);
     }
     printf("\n-------------------------------------------------------------------------------------------------\n");
@@ -209,12 +208,12 @@ void mostrarNotaFiscal(Produto produtos[], int tamanho, float total) {
         if (produtos[i].tempVendidos > 0) {
             printf("|%-10d|%-20s|R$%-13.2f|%-10d|R$%-13.2f|\n", item, produtos[i].nome, produtos[i].preco, produtos[i].tempVendidos, produtos[i].preco * produtos[i].tempVendidos);
             item++;
-            }
         }
+    }
     printf("----------------------------------------------------------------------------\n");
     printf("|%47s|%-10s|R$%-13.2f|\n", "", "TOTAL", totalTemp);
     printf("----------------------------------------------------------------------------\n");
-    }
+}
 
 void pagarCompra(Produto produtos[], int tamanho, float totalTemp, float* total) {
     int metodo = 0, parcelas = 0;
@@ -223,73 +222,73 @@ void pagarCompra(Produto produtos[], int tamanho, float totalTemp, float* total)
         printf("\nEscolha um meio de pagamento: [1 para A VISTA / 2 para a PRAZO] => ");
         if (scanf("%d", &metodo) != 1 || (metodo != 1 && metodo != 2)) {
             mostrarErro("Metodo de pagamento invalido!");
-            }
+        }
         else {
             if (metodo == 1) {
                 printf("Voce escolheu pagar a vista!\n");
                 if (totalTemp < 50) {
                     totalTemp *= 0.95;
-                    }
+                }
                 else if (totalTemp >= 50 && totalTemp <= 100) {
                     totalTemp *= 0.9;
-                    }
+                }
                 else {
                     totalTemp *= 0.82;
-                    }
+                }
                 printf("Valor total final (com desconto): R$%.2f\n", totalTemp);
                 while (1) {
                     printf("\nDigite o valor recebido pelo caixa: R$  ");
                     scanf("%f", &totalRecebido);
                     if (totalRecebido < totalTemp) {
                         printf("Valor invalido! Faltam R$ %.2f \n", totalTemp - totalRecebido);
-                        }
+                    }
                     else {
                         troco = totalRecebido - totalTemp;
                         if (troco > 0) {
                             printf("Troco a ser retornado: R$%.2f \n", troco);
-                            }
-                        break;
                         }
+                        break;
                     }
                 }
+            }
             else {
                 printf("Voce escolheu pagar a prazo!\n");
                 while (1) {
                     printf("\nEm quantas parcelas voce deseja pagar?");
                     if (scanf("%d", &parcelas) != 1 || parcelas < 1) {
                         mostrarErro("Numero de parcelas invalido, digite um valor igual ou acima de 1 parcela!");
-                        }
+                    }
                     else {
                         printf("Voce escolheu pagar em %d parcelas.\n", parcelas);
                         if (parcelas <= 3) {
                             totalTemp *= 1.05;
-                            }
+                        }
                         else {
                             totalTemp *= 1.08;
-                            }
+                        }
                         printf("\nValor total final (com acrescimo): R$%.2f\n", totalTemp);
                         printf("Valor da parcela: R$%.2f\n", totalTemp / parcelas);
                         printf("Total de parcelas: %d\n", parcelas);
                         break;
-                        }
                     }
                 }
+            }
             *total += totalTemp;
             resetarVendas(produtos, tamanho);
             break;
-            }
         }
     }
+}
 
 bool verificarEstoque(Produto produtos[], int tamanho) {
     int produtosVazios = 0;
     for (int i = 0; i < tamanho; i++) {
         if (produtos[i].estoque == 0) {
             produtosVazios++;
-            }
         }
-    return (produtosVazios == tamanho ? true : false);
     }
+    return (produtosVazios == tamanho ? true : false);
+}
 
 bool validarID(Produto produtos[], int tamanho,double id, int *pIndexProduto) {
     bool idValido = false;
@@ -400,7 +399,7 @@ void excluirProdutos(Produto *produtos, int *tamanho) {
         idValido = validarID(produtos, *tamanho, id, pIndice); 
 		if (!idValido) {
 			mostrarErro("Produto nao encontrado.\n");
-			}
+        }
 		}while (idValido == false);
 		int opcao = 0;
 		do {
@@ -437,7 +436,7 @@ void realizarVenda(Produto produtos[], int tamanho, float* total) {
             printf("\nDigite o ID do produto: ");
             if (scanf("%lf", &idProduto) != 1) {
                 mostrarErro("Valor invalido. Tente novamente!");
-                }
+            }
             else {
                 bool idExistente = false;
                 int indexProduto = 0, i = 0;
@@ -446,15 +445,15 @@ void realizarVenda(Produto produtos[], int tamanho, float* total) {
                         idExistente = true;
                         indexProduto = i;
                         break;
-                        }
                     }
+                }
                 if (idExistente && produtos[indexProduto].estoque != 0) {
                     printf("Produto selecionado => %s\n", produtos[indexProduto].nome);
                     do {
                         printf("Digite a quantidade desejada: ");
                         if (scanf("%d", &quantidade) != 1 || quantidade > produtos[indexProduto].estoque || quantidade == 0) {
                             mostrarErro("\nQuantidade invalida ou insuficiente!");
-                            }
+                        }
                         else {
                             printf("Produto adicionado ao carrinho!\n");
                             totalTemp += produtos[indexProduto].preco * quantidade;
@@ -464,30 +463,29 @@ void realizarVenda(Produto produtos[], int tamanho, float* total) {
                                 printf("\nDeseja comprar mais um produto? [1 para SIM | 2 para NAO] => ");
                                 if (scanf("%d", &opcaoMenu) != 1 || (opcaoMenu != 1 && opcaoMenu != 2)) {
                                     mostrarErro("Valor invalido!");
-                                    }
+                                }
                                 else {
                                     isEstoqueVazio = verificarEstoque(produtos, tamanho);
                                     if (isEstoqueVazio == true && opcaoMenu == 1) {
                                         printf("\nTodos os itens estao indisponiveis. Cadastre-os primeiro!\n");
-                                        }
                                     }
-                                } while (opcaoMenu != 1 && opcaoMenu != 2 && isEstoqueVazio == false);
-                            }
-                        } while ((opcaoMenu != 1 && opcaoMenu != 2 && isEstoqueVazio == false));
-
-                    }
+                                }
+                            } while (opcaoMenu != 1 && opcaoMenu != 2 && isEstoqueVazio == false);
+                        }
+                    } while ((opcaoMenu != 1 && opcaoMenu != 2 && isEstoqueVazio == false));
+                }
                 else {
                     printf("ID invalido ou produto indisponivel. Tente novamente!\n");
-                    }
                 }
             }
+        }
         mostrarNotaFiscal(produtos, tamanho, totalTemp);
         pagarCompra(produtos, tamanho, totalTemp, total);
-        }
+    }
     else {
         printf("Todos os produtos estao com estoque indisponivel!\n");
-        }
     }
+}
 
 void abrirSubmenuProdutos(Produto* produtos, int* tamanho) {
     int opcaoMenu = 0;
@@ -496,7 +494,7 @@ void abrirSubmenuProdutos(Produto* produtos, int* tamanho) {
         printf("[1] Exibir\n[2] Cadastrar\n[3] Atualizar\n[4] Excluir\n[5] Salvar\n[6] Ler\n[7] Voltar\nDigite um valor: ");
         if (scanf("%d", &opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 7) {
             mostrarErro("Valor invalido");
-            }
+        }
         else {
             switch (opcaoMenu) {
                 case 1:
@@ -520,10 +518,10 @@ void abrirSubmenuProdutos(Produto* produtos, int* tamanho) {
                 case 7:
                     printf("VOLTANDO AO MENU...\n");
                     break;
-                }
             }
         }
     }
+}
 
 void abrirSubmenuVendas(Produto* produtos, int* tamanho) {
     int opcaoMenu = 0;
@@ -533,7 +531,7 @@ void abrirSubmenuVendas(Produto* produtos, int* tamanho) {
         printf("[1] Realizar Venda\n[2] Relatorio de Vendas\n[3] Voltar\nDigite um valor: ");
         if (scanf("%d", &opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 7) {
             mostrarErro("Valor invalido");
-            }
+        }
         else {
             switch (opcaoMenu) {
                 case 1:
@@ -545,15 +543,15 @@ void abrirSubmenuVendas(Produto* produtos, int* tamanho) {
                 case 3:
                     printf("VOLTANDO AO MENU ...\n");
                     break;
-                }
             }
         }
     }
+}
 
 void fecharAplicativo(Produto* produtos) {
     free(produtos);
     exit(1);
-    }
+}
 
 int main() {
     int tamanho = 0, * ptamanho = &tamanho, opcaoMenu = 0;
@@ -564,7 +562,7 @@ int main() {
         printf("[1] Produtos\n[2] Vendas\n[3] Sair\nDigite um valor: ");
         if (scanf("%d", &opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 3) {
             mostrarErro("Valor invalido");
-            }
+        }
         else {
             switch (opcaoMenu) {
                 case 1:
@@ -577,9 +575,9 @@ int main() {
                     printf("SAINDO...");
                     fecharAplicativo(produtos);
                     break;
-                }
             }
         }
+    }
     free(produtos);
     produtos = NULL;
     return 0;
