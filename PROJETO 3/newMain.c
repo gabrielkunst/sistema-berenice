@@ -3,11 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#define MAX_NAME_LENGTH 26
 
 typedef struct {
     double id;
-    char nome[MAX_NAME_LENGTH];
+    char nome[50];
     double preco;
     int estoque;
     int vendidos;
@@ -90,89 +89,71 @@ void printarTabelaProdutos(Produto produtos[], int tamanho) {
     printf("\n-----------------------------------------------------------------\n");
     printf("|                           PRODUTOS                            |\n");
     printf("-----------------------------------------------------------------\n");
-    printf("|%-12s|%-25s|%-12s|%-10s\t|\n", "CODIGO", "ITEM", "PRECO", "ESTOQUE");
+    printf("|%-12s|%-20s|%-12s|%-10s\t|\n", "CODIGO", "ITEM", "PRECO", "ESTOQUE");
     printf("-----------------------------------------------------------------\n");
     for (int i = 0; i < tamanho; i++) {
-        printf("|%-12.0lf|%-25s|R$%-10.2lf|%-10d\t|\n", produtos[i].id, produtos[i].nome, produtos[i].preco, produtos[i].estoque);
+        printf("|%-12.0lf|%-20s|R$%-10.2lf|%-10d\t|\n", produtos[i].id, produtos[i].nome, produtos[i].preco, produtos[i].estoque);
     }
     printf("-----------------------------------------------------------------\n");
-}
-
-int verificarSeIdExiste(Produto produtos[], int tamanho, double idRecebido) {
-    for (int i = 0; i < tamanho; i++) {
-        if (produtos[i].id == idRecebido) {
-            return 1;
-        }
-    }
-    return 0;
 }
 
 void cadastrarProdutos(Produto** produtos, int* tamanho) {
-    int quantidadeParaCadastar = 0;
-    while(1) {
-        printf("Quantidade de produtos a serem cadastrados: ");
-        if(scanf("%d", &quantidadeParaCadastar) != 1 || quantidadeParaCadastar <= 0 ) {
-            mostrarErro("Quantidade invalida!\n");
-        } else {
-            *produtos = realloc(*produtos, (*tamanho + quantidadeParaCadastar) * sizeof(Produto));
-            if (produtos == NULL) {
-                mostrarErro("Erro na alocacao!\n");
-                exit(1);
+    int i, j, quantidadeParaCadastar = 0;
+    printf("Quantidade de produtos a serem cadastrados: ");
+    scanf("%d", &quantidadeParaCadastar);
+    getchar();
+    *produtos = realloc(*produtos, (*tamanho + quantidadeParaCadastar) * sizeof(Produto));
+    for (i = *tamanho; i < (*tamanho + quantidadeParaCadastar); i++) {
+        bool idValido = false;
+        while (!idValido) {
+            printf("\nDigite as informacoes para o produto %d:\n", i);
+            printf("ID: ");
+            scanf("%lf", &(*produtos)[i].id);
+            getchar();
+            idValido = true;
+            for (j = 0; j < *tamanho; j++) {
+                if ((*produtos)[j].id == (*produtos)[i].id) {
+                    printf("\nJa existe um produto cadastrado nesse ID, informe um ID valido.\n");
+                    idValido = false;
+                    break;
+                }
             }
-            for(int i = *tamanho; i < (*tamanho + quantidadeParaCadastar); i++){
-                bool idValido = false, precoValido = false, estoqueValido = false, nomeValido = false;
-                double idProduto = 0, precoProduto = 0;
-                int estoqueProduto = 0;
-                char nomeProduto[MAX_NAME_LENGTH];
-                printf("Digite as informacoes para o produto %d: \n", i + 1);
-                do {
-                    printf("ID: ");
-                    if(scanf("%lf", &idProduto) != 1 || idProduto < 0) {
-                        mostrarErro("ID invalido! ID precisa ser maior que zero...\n");
-                    } else {
-                        if(verificarSeIdExiste(*produtos, *tamanho, idProduto)) {
-                            printf("Codigo ja existente\n");
-                        } else {
-                            (*produtos)[i].id = idProduto;
-                            idValido = true;
-                        }
-                    }
-                } while(!idValido);
-                do {
-                    printf("Nome: ");
-                    if(fgets(nomeProduto, MAX_NAME_LENGTH, stdin) == NULL || nomeProduto[0] == '\n') {
-                        mostrarErro("Nome invalido! Nome nao pode ser vazio...\n");
-                    } else {
-                        nomeProduto[strcspn(nomeProduto, "\n")] = '\0';  // remove newline character
-                        strncpy((*produtos)[i].nome, nomeProduto, MAX_NAME_LENGTH);
-                        nomeValido = true;
-                    }
-                } while(!nomeValido);
-                do {
-                    printf("Preco: R$");
-                    if(scanf("%lf", &precoProduto) != 1 || precoProduto < 0) {
-                        mostrarErro("Preco invalido! Preco deve ser maior ou igual a zero...\n");
-                    } else {
-                        (*produtos)[i].preco = precoProduto;
-                        precoValido = true;
-                    }
-                } while(!precoValido);
-                do {
-                    printf("Estoque: ");
-                    if(scanf("%d", &estoqueProduto) != 1 || estoqueProduto < 0) {
-                        mostrarErro("Estoque invalido! Estoque precisa ser maior ou igual a zero...\n");
-                    } else {
-                        (*produtos)[i].estoque = estoqueProduto;
-                        estoqueValido = true;
-                    }
-                } while(!estoqueValido);
-                (*produtos)[i].vendidos = 0;
-                (*produtos)[i].tempVendidos = 0;
-            }
-            *tamanho += quantidadeParaCadastar;
-            break;
         }
-    } 
+        printf("Nome: ");
+        fgets((*produtos)[i].nome, sizeof((*produtos)[i].nome), stdin);
+        (*produtos)[i].nome[strcspn((*produtos)[i].nome, "\n")] = '\0';
+        bool precoValido = false;
+        while (!precoValido) {
+            printf("Preco: R$");
+            if (scanf("%lf", &(*produtos)[i].preco) != 1 || (*produtos)[i].preco < 0) {
+                getchar();
+                printf("\nInforme um preco valido. O preco precisa ser maior ou igual a zero.\n");
+            } else {
+                precoValido = true;
+            }
+        }
+        bool estoqueValido = false;
+        while (!estoqueValido) {
+            printf("Estoque: ");
+            if (scanf("%d", &(*produtos)[i].estoque) != 1 || (*produtos)[i].estoque < 0) {
+                getchar();
+                printf("\nInforme um valor valido. O estoque precisa ser maior ou igual a zero.\n");
+            } else {
+                estoqueValido = true;
+            }
+        }
+        (*produtos)[i].vendidos = 0;
+        (*produtos)[i].tempVendidos = 0;
+    }
+    *tamanho += quantidadeParaCadastar;
+    if (quantidadeParaCadastar == 1) {
+        printf("\nO produto %s foi cadastrado.\n", (*produtos)[i - 1].nome);
+    } else {
+        printf("\nOs produtos abaixo foram cadastrados.\n");
+        for (j = *tamanho - quantidadeParaCadastar; j < *tamanho; j++) {
+            printf("%s\n", (*produtos)[j].nome);
+        }
+    }
 }
 
 void mostrarRelatorioDeVendas(Produto produtos[], int tamanho, float* total) {
@@ -221,11 +202,11 @@ void mostrarNotaFiscal(Produto produtos[], int tamanho, float total) {
     printf("\n----------------------------------------------------------------------------\n");
     printf("|                                NOTA FISCAL                               |\n");
     printf("----------------------------------------------------------------------------\n");
-    printf("|%-10s|%-25s|%-15s|%-10s|%-15s|\n", "ITEM", "NOME", "VALOR UNIT.", "QUANT.", "SUB-TOTAL");
+    printf("|%-10s|%-20s|%-15s|%-10s|%-15s|\n", "ITEM", "NOME", "VALOR UNIT.", "QUANT.", "SUB-TOTAL");
     printf("----------------------------------------------------------------------------\n");
     for (int i = 0; i < tamanho; i++) {
         if (produtos[i].tempVendidos > 0) {
-            printf("|%-10d|%-25s|R$%-13.2f|%-10d|R$%-13.2f|\n", item, produtos[i].nome, produtos[i].preco, produtos[i].tempVendidos, produtos[i].preco * produtos[i].tempVendidos);
+            printf("|%-10d|%-20s|R$%-13.2f|%-10d|R$%-13.2f|\n", item, produtos[i].nome, produtos[i].preco, produtos[i].tempVendidos, produtos[i].preco * produtos[i].tempVendidos);
             item++;
         }
     }
@@ -325,7 +306,7 @@ void atualizarProdutos(Produto produtos[], int tamanho) {
     bool idValido = false, operacaoConcluida = false;
     int indexProduto = 0, *pIndexProduto = &indexProduto;
     int opcaoEscolhida = 0, novoEstoque = 0; 
-    double novoValorUnitario = 0;
+    float novoValorUnitario = 0;
     do {   
         printarTabelaProdutos(produtos, tamanho);
         printf("Digite o ID do produto: ");
@@ -371,7 +352,7 @@ void atualizarProdutos(Produto produtos[], int tamanho) {
                             do {
                                 opcaoEscolhida = 0;
                                 printf("Digite o novo valor: ");
-                                if (scanf("%lf", &novoValorUnitario) != 1 || novoValorUnitario < 0) {
+                                if (scanf("%f", &novoValorUnitario) != 1 || novoValorUnitario < 0) {
                                     mostrarErro("Valor invalido!\n");
                                 } else {
                                     do {  
@@ -409,34 +390,33 @@ void deletarERelerArquivo(Produto** produtos, int* tamanho) {
 }
 
 void excluirProdutos(Produto *produtos, int *tamanho) {
-    double id = 0;
-    int indice = -1;
+    int id = 0, indice = -1, *pIndice = &indice, opcao = 0;
     bool idValido = false;
     printarTabelaProdutos(produtos, *tamanho);
     do {
         printf("Informe o ID do produto que voce deseja excluir: ");
-        if(scanf("%lf", &id) != 1) {
-            mostrarErro("ID invalido! Tente novamente...\n");
-            while(getchar() != '\n');  // clear input buffer
-        } else {
-            idValido = validarID(produtos, *tamanho, id, &indice); 
-		    if (!idValido) {
-			    mostrarErro("Produto nao encontrado.\n");
-		    }
-        }
+        scanf("%d", &id);
+        idValido = validarID(produtos, *tamanho, id, pIndice); 
+		if (!idValido) {
+			mostrarErro("Produto nao encontrado.\n");
+		}
 	}while (idValido == false);
-	int opcao = 0;
 	do {
         printf("Deseja realmente excluir o produto %s? [1] SIM | [2] NAO: ", produtos[indice].nome);
         if((scanf("%d", &opcao) != 1) || (opcao != 1 && opcao != 2)){
             mostrarErro("Valor invalido!\n");
-            while(getchar() != '\n');  // clear input buffer
         } else if (opcao == 1) {
+            Produto produtoExcluido = produtos[indice];
             for (int i = indice; i < (*tamanho - 1); i++) {
                 produtos[i] = produtos[i + 1];
             }
             *tamanho -= 1;
-            printf("\nO produto %s foi excluido.\n", produtos[indice].nome);
+            produtos = realloc(produtos, (*tamanho) * sizeof(Produto));
+            if (produtos == NULL) {
+                mostrarErro("\nErro na realocacao de memoria!\n");
+                exit(1);
+            }
+            printf("\nO produto %s foi excluido.\n", produtoExcluido.nome);
         } else {
             printf("\nA exclusao do produto foi cancelada.\n");
         }
