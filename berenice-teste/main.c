@@ -25,7 +25,7 @@ typedef struct {
     Node *tail;
 } Queue;
 
-void printQueue(Queue *queue) {
+void printarLista(Queue *queue) {
     Node *currentNode = queue->head;
     printf("\n|       QUEUE       |\n");
     if (queue->head != NULL) {
@@ -85,45 +85,38 @@ void inserirNode(Queue *queue, Produto produto) {
     }
 }
 
-Node *middle(Node *start,Node *last) {
-    if (start == NULL)
-        return NULL;
-    Node* slow = start;
-    Node* fast = start -> next;
-    while (fast != last) {
-        fast = fast -> next;
-        if (fast != last) {
-            slow = slow -> next;
-            fast = fast -> next;
+void deletarNode(Queue *queue, double produtoId){
+    Node *nodeAtual = queue->head;
+    if (nodeAtual == NULL) {
+        printf("\nLista vazia!\n");
+        printf("Adicione um produto para excluí-lo...\n");
+        return; 
+    }
+    while (nodeAtual != NULL && nodeAtual->data.id != produtoId ) {
+        nodeAtual = nodeAtual->next;
+    }
+    if (nodeAtual->prev == NULL) {
+        if (nodeAtual->next == NULL) {
+            queue->head = NULL;
+            queue->tail = NULL;
+        } else {
+            nodeAtual->next->prev = NULL;
+            queue->head = nodeAtual->next;
+        }
+    } else {
+        if (nodeAtual->next == NULL) {
+            queue->tail = nodeAtual->prev;
+            nodeAtual->prev->next = NULL;
+        } else {
+            nodeAtual->prev->next = nodeAtual->next;
+            nodeAtual->next->prev = nodeAtual->prev;
         }
     }
-    return slow;
+    printf("ID DELETADO: %.2lf\n", nodeAtual->data.id);
+    free(nodeAtual);
 }
 
-Node *binarySearch(Queue *queue, double idProduto) {
-    Node *start = queue->head;
-    Node *last = queue->tail;
-    do {
-        Node *mid = middle(start, last);
-        if (mid == NULL)
-            return NULL;
-        if (mid->data.id == idProduto) {
-            return mid;
-        } else if (mid->data.id < idProduto)
-            start = mid -> next;
-        else {
-            last = mid;
-        }
-    } while (last != start);
-    return NULL;
-}
-
-void deletarNode(Queue *queue) {
-    double idProduto = 0;
-    printf("Digite o Id do produto a ser deletado: ");
-    scanf("%d", &idProduto);
-    printf("NOME: %s\n", binarySearch(queue, idProduto)->data.nome);
-}
+void atualizarNode(){}
 
 void mostrarErro(char message[]) {
     printf("%s\n", message);
@@ -157,13 +150,13 @@ int verificarSeIdExiste(Queue *queue, double idProduto) {
 }
 
 void exibirProdutos(Queue *queue){
-    printQueue(queue);
     Node *nodeAtual = queue->head;
     if (nodeAtual == NULL) {
         printf("\nLista vazia!\n");
         printf("Adicione um produto para mostra-lo...\n");
         return;
     }
+    printarLista(queue);
     printf("\n-----------------------------------------------------------------\n");
     printf("|                           PRODUTOS                            |\n");
     printf("-----------------------------------------------------------------\n");
@@ -190,7 +183,7 @@ void cadastrarProdutos(Queue *queue){
                 Produto produtoTemporario;
                 printf("Digite as informacoes do produto: \n");
                 do {
-                    printf("\nID: ");
+                    printf("ID: ");
                     if(scanf("%lf", &produtoTemporario.id) != 1 || produtoTemporario.id <= 0) {
                         mostrarErro("ID invalido! ID precisa ser maior que zero...\n");
                     } else {
@@ -202,7 +195,7 @@ void cadastrarProdutos(Queue *queue){
                     }
                 } while(!idValido);
                 do {
-                    printf("\nNome: ");
+                    printf("Nome: ");
                     if (buffer) {
                         getchar();
                         buffer = false;
@@ -217,7 +210,7 @@ void cadastrarProdutos(Queue *queue){
                     }
                 } while(!nomeValido);
                 do {
-                    printf("\nPreco: R$");
+                    printf("Preco: R$");
                     if(scanf("%lf", &produtoTemporario.preco) != 1 || produtoTemporario.preco < 0) {
                         mostrarErro("Preco invalido! Preco deve ser maior ou igual a zero...\n");
                     } else {
@@ -225,7 +218,7 @@ void cadastrarProdutos(Queue *queue){
                     }
                 } while(!precoValido);
                 do {
-                    printf("\nEstoque: ");
+                    printf("Estoque: ");
                     if(scanf("%d", &produtoTemporario.estoque) != 1 || produtoTemporario.estoque < 0) {
                         mostrarErro("Estoque invalido! Estoque precisa ser maior ou igual a zero...\n");
                     } else {
@@ -244,7 +237,10 @@ void cadastrarProdutos(Queue *queue){
 void atualizarProdutos(Queue *queue){}
 
 void excluirProdutos(Queue *queue){
-    deletarNode(queue);
+    double produtoId = 0;
+    puts("ID:");
+    scanf("%lf", &produtoId);
+    deletarNode(queue, produtoId);
 }
 
 void salvarProdutos(Queue *queue){}
