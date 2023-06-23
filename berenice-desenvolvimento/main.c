@@ -338,6 +338,7 @@ void excluirProdutos(Queue *queue) {
             if(scanf("%lf", &idProduto) != 1) {
                 mostrarErro("ID invalido! Tente novamente...\n");
             } else {
+                binarySearch(queue->head, idProduto);
                 Node *matchingNode = verificarSeIdExiste(queue, idProduto);
                 if (matchingNode == NULL) {
                     puts("Produto nao encontrado...\n");
