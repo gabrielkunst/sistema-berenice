@@ -529,8 +529,7 @@ void realizarVenda(Produto produtos[], int tamanho, float* total) {
         }
         mostrarNotaFiscal(produtos, tamanho, totalTemp);
         pagarCompra(produtos, tamanho, totalTemp, total);
-    }
-    else {
+    } else {
         printf("Todos os produtos estao com estoque indisponivel!\n");
     }
 }
