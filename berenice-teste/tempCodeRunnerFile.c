@@ -1,2 +1,1 @@
-;
-        fscanf(file, "%d", &produto.vendidos
+n

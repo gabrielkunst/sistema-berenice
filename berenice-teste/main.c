@@ -3,8 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#define MAX_NAME_LENGTH 26
+#define MAX_NAME_LENGTH 26 // tamanho maximo nome
 
+// estrutura do produto
 typedef struct {
     double id;
     char nome[MAX_NAME_LENGTH];
@@ -14,17 +15,21 @@ typedef struct {
     int tempVendidos;
 } Produto;
 
+// estrutura do node (NODE === NO)
 typedef struct Node {
     Produto data;
-    struct Node *next;
-    struct Node *prev;
+    struct Node *next; // endereco do proximo node (next === proximo)
+    struct Node *prev; // endereco do node anterior (prev === anterior)
 } Node;
 
+// estrutura da lista (queue === lista)
 typedef struct {
-    Node *head;
-    Node *tail;
+    Node *head; // primeiro elemento da lista (head === cabeca)
+    Node *tail; // ultimo elemento da lista (tail === rabo, cauda)
 } Queue;
 
+/* FUNCOES IMPLEMENTADAS ==> NECESSARIO TESTE */
+// funcao que printa a queue/lista
 void printarLista(Queue *queue) {
     Node *currentNode = queue->head;
     printf("\n|       QUEUE       |\n");
@@ -52,9 +57,9 @@ void printarLista(Queue *queue) {
         currentNode = currentNode->next;
     }
     printf("\n|        END        |\n");
-    free(currentNode);
 }
 
+// funcao que cria e adiciona um novo node/no
 void inserirNode(Queue *queue, Produto produto) {
     Node *novoNode = (Node*)malloc(sizeof(Node));
     novoNode->data = produto;
@@ -85,13 +90,9 @@ void inserirNode(Queue *queue, Produto produto) {
     }
 }
 
+// funcao que deleta um node/no
 void deletarNode(Queue *queue, double produtoId){
     Node *nodeAtual = queue->head;
-    if (nodeAtual == NULL) {
-        printf("\nLista vazia!\n");
-        printf("Adicione um produto para excluí-lo...\n");
-        return; 
-    }
     while (nodeAtual != NULL && nodeAtual->data.id != produtoId ) {
         nodeAtual = nodeAtual->next;
     }
@@ -112,12 +113,10 @@ void deletarNode(Queue *queue, double produtoId){
             nodeAtual->next->prev = nodeAtual->prev;
         }
     }
-    printf("ID DELETADO: %.2lf\n", nodeAtual->data.id);
     free(nodeAtual);
 }
 
-void atualizarNode(){}
-
+// funcao mostra uma mensagem de erro e limpa o buffer
 void mostrarErro(char message[]) {
     printf("%s\n", message);
     while (getchar() != '\n') {
@@ -125,6 +124,7 @@ void mostrarErro(char message[]) {
     }
 }
 
+// funcao verifica se o nome tem so espacos
 bool temApenasEspacos(char* nomeProduto) {
     while (*nomeProduto != '\0') {
         if (*nomeProduto != ' ')
@@ -134,26 +134,24 @@ bool temApenasEspacos(char* nomeProduto) {
     return true;
 }
 
-int verificarSeIdExiste(Queue *queue, double idProduto) {
+// funcao verifica se o id existe e retorna o node/no/produto
+Node* verificarSeIdExiste(Queue *queue, double idProduto) {
     Node *nodeAtual = queue->head;
-    if(nodeAtual == NULL) {
-        return 0;
-    } else {
-        while (nodeAtual != NULL) {
-            if (nodeAtual->data.id == idProduto) {
-                return 1;
-            }
-            nodeAtual = nodeAtual->next;
+    while (nodeAtual != NULL) {
+        if (nodeAtual->data.id == idProduto) {
+            return nodeAtual;
         }
+        nodeAtual = nodeAtual->next;
     }
-    return 0;
+    return NULL; 
 }
 
+// funcao exibe os produtos na tabela
 void exibirProdutos(Queue *queue){
     Node *nodeAtual = queue->head;
     if (nodeAtual == NULL) {
-        printf("\nLista vazia!\n");
-        printf("Adicione um produto para mostra-lo...\n");
+        puts("Lista vazia!");
+        puts("Adicione um produto para mostra-lo...");
         return;
     }
     printarLista(queue);
@@ -167,9 +165,9 @@ void exibirProdutos(Queue *queue){
         nodeAtual = nodeAtual->next;
     }
     printf("-----------------------------------------------------------------\n");
-    free(nodeAtual);
 }
 
+// funcao cadastra os produtos na queue/lista
 void cadastrarProdutos(Queue *queue){
     int quantidadeParaCadastar = 0;
     while(1) {
@@ -181,14 +179,15 @@ void cadastrarProdutos(Queue *queue){
                 bool idValido = false, precoValido = false, estoqueValido = false, nomeValido = false, buffer = true;
                 char nomeProduto[MAX_NAME_LENGTH];
                 Produto produtoTemporario;
-                printf("Digite as informacoes do produto: \n");
+                printf("\nDigite as informacoes do produto: \n");
                 do {
                     printf("ID: ");
                     if(scanf("%lf", &produtoTemporario.id) != 1 || produtoTemporario.id <= 0) {
-                        mostrarErro("ID invalido! ID precisa ser maior que zero...\n");
+                        mostrarErro("ID invalido! ID precisa ser maior que zero e apenas numeros...\n");
                     } else {
-                        if(verificarSeIdExiste(queue, produtoTemporario.id)) {
-                            printf("Codigo ja existente\n");
+                        Node *matchingNode = verificarSeIdExiste(queue, produtoTemporario.id);
+                        if(matchingNode != NULL) {
+                            puts("Codigo ja existente\n");
                         } else {
                             idValido = true;
                         }
@@ -203,7 +202,7 @@ void cadastrarProdutos(Queue *queue){
                     fgets(nomeProduto, MAX_NAME_LENGTH, stdin);
                     strtok(nomeProduto, "\n");
                     if (nomeProduto[0] == '\n' || temApenasEspacos(nomeProduto)) {
-                        printf("Nome invalido! Nome nao pode ser vazio ou apenas espacos...\n");
+                        printf("Nome invalido! Nome nao pode ser vazio ou apenas espacos...\n\n");
                     } else { 
                         strcpy(produtoTemporario.nome, nomeProduto);
                         nomeValido = true;
@@ -234,22 +233,216 @@ void cadastrarProdutos(Queue *queue){
     } 
 }
 
-void atualizarProdutos(Queue *queue){}
-
-void excluirProdutos(Queue *queue){
-    double produtoId = 0;
-    puts("ID:");
-    scanf("%lf", &produtoId);
-    deletarNode(queue, produtoId);
+// funcao atualiza os produtos da queue/lista
+void atualizarProdutos(Queue *queue){
+    Node *nodeAtual = queue->head;
+    double idProduto = 0, novoValorUnitario = 0;
+    int opcaoMenu = 0, novoEstoque = 0;
+    bool operacaoConcluida = false;
+    if (nodeAtual == NULL) {
+        puts("Lista vazia!");
+        puts("Adicione um produto para atualiza-lo...");
+        return;
+    }
+    do {
+        exibirProdutos(queue);
+        printf("Digite o ID do produto: ");
+        if(scanf("%lf", &idProduto) != 1) {
+            mostrarErro("ID invalido!\n");
+        } else {
+            Node *matchingNode = verificarSeIdExiste(queue, idProduto);
+            if (matchingNode == NULL) {
+                puts("Produto nao encontrado...");
+            } else {
+                nodeAtual = matchingNode;
+                printf("Produto selecionado => %s\n", nodeAtual->data.nome);
+                do {
+                    printf("[1] Quantidade\n[2] Valor Unitario\nO que voce deseja alterar? ");
+                    if ((scanf("%d", &opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
+                        mostrarErro("Valor invalido!\n");
+                    } else {
+                        if (opcaoMenu == 1) {
+                            printf("\nVoce escolheu mudar a quantidade.\n");
+                            do {
+                                opcaoMenu = 0;
+                                printf("Digite a nova quantidade: ");
+                                if (scanf("%d", &novoEstoque) != 1 || novoEstoque < 0) {
+                                    mostrarErro("Valor invalido!\n");
+                                } else {
+                                    do {
+                                        printf("[ESTOQUE ANTIGO] => %d\n[ESTOQUE NOVO] => %d\nVoce deseja fazer a alteracao acima? [1] SIM | [2] NAO: ", nodeAtual->data.estoque, novoEstoque);
+                                        if ((scanf("%d", &opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
+                                            mostrarErro("Valor invalido!\n");
+                                        } else {
+                                            if (opcaoMenu == 1) {
+                                                nodeAtual->data.estoque = novoEstoque;
+                                                printf("Alteracao feita com sucesso!\n");
+                                            } else {
+                                                printf("Alteracao cancelada!\n");
+                                            }
+                                            operacaoConcluida = true;
+                                            break;
+                                        }
+                                    } while(opcaoMenu != 1 && opcaoMenu != 2);
+                                    
+                                } 
+                            } while(opcaoMenu != 1 && opcaoMenu != 2);
+                        } else {
+                            printf("\nVoce escolheu mudar o valor unitario.\n");
+                            do {
+                                opcaoMenu = 0;
+                                printf("Digite o novo valor: ");
+                                if (scanf("%lf", &novoValorUnitario) != 1 || novoValorUnitario < 0) {
+                                    mostrarErro("Valor invalido!\n");
+                                } else {
+                                    do {  
+                                        printf("[VALOR ANTIGO] => R$ %.2f\n[VALOR NOVO] => R$ %.2f\nVoce deseja fazer a alteracao acima? [1] SIM | [2] NAO: ", nodeAtual->data.preco, novoValorUnitario);
+                                        if ((scanf("%d", &opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
+                                            mostrarErro("Valor invalido!\n");
+                                        } else {
+                                            if (opcaoMenu == 1) {
+                                                nodeAtual->data.preco = novoValorUnitario;
+                                                printf("Alteracao feita com sucesso!\n");
+                                            } else {
+                                                printf("Alteracao cancelada!\n");
+                                            }
+                                            operacaoConcluida = true;
+                                            break;
+                                        }
+                                    } while(opcaoMenu != 1 && opcaoMenu != 2);
+                                }
+                            }  while(opcaoMenu != 1 && opcaoMenu != 2);
+                        }
+                    }
+                } while(operacaoConcluida == false);
+            }
+        }
+    } while (opcaoMenu != 1 && opcaoMenu != 2);
 }
 
-void salvarProdutos(Queue *queue){}
+// funcao exclui algum produto da queue/lista
+void excluirProdutos(Queue *queue) {
+    Node *nodeAtual = queue->head;
+    if (nodeAtual == NULL) {
+        puts("Lista vazia!");
+        puts("Adicione um produto para exclui-lo...");
+        return;
+    } else {
+        Node *produtoDeletado = NULL;
+        int opcaoMenu = 0;
+        double idProduto = 0;
+        bool idValido = false;
+        exibirProdutos(queue);
+        do {
+            printf("Informe o ID do produto que voce deseja excluir: ");
+            if(scanf("%lf", &idProduto) != 1) {
+                mostrarErro("ID invalido! Tente novamente...\n");
+            } else {
+                Node *matchingNode = verificarSeIdExiste(queue, idProduto);
+                if (matchingNode == NULL) {
+                    puts("Produto nao encontrado...\n");
+                } else {
+                    produtoDeletado = matchingNode;
+                    idValido = true;
+                }
+            }
+        } while (!idValido);
+        do {
+            printf("Deseja realmente excluir o produto %s? [1] SIM | [2] NAO: ", produtoDeletado->data.nome);
+            if((scanf("%d", &opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)){
+                mostrarErro("Valor invalido!\n");
+            } else {
+                if (opcaoMenu == 1) {
+                    deletarNode(queue, produtoDeletado->data.id);
+                    puts("Produto deletado.");
+                } else {
+                    puts("\nA exclusao do produto foi cancelada.");
+                }
+            }
+        } while (opcaoMenu != 1 && opcaoMenu != 2);
+    }
+}
 
-void lerProdutos(Queue *queue){}
+// funcao le os produtos do txt e insere na queue/lista
+void lerProdutosDoArquivo(Queue *queue) {
+    FILE *file = fopen("produtos.txt", "r");
+    bool primeiroProduto = true;
+    if(file == NULL) {
+        puts("Erro ao abrir o arquivo...");
+        return;
+    }
+    char linha[MAX_NAME_LENGTH];
+    Produto produtoTemporario;
+    while(fscanf(file, "%lf", &produtoTemporario.id) == 1) {
+        fgetc(file);
+        fgets(linha, MAX_NAME_LENGTH, file);
+        strtok(linha, "\n");
+        strcpy(produtoTemporario.nome, linha);
+        fscanf(file, "%lf", &produtoTemporario.preco);
+        fscanf(file, "%d", &produtoTemporario.estoque);
+        fscanf(file, "%d", &produtoTemporario.vendidos);
+        fgetc(file);
+        inserirNode(queue, produtoTemporario);
+    }
+    fclose(file);
+}
+
+// funcao que limpa a queue/lista
+void clearQueue(Queue *queue) {
+    Node *nodeAtual = queue->head;
+    Node *nextNode;
+    if (nodeAtual == NULL) {
+        return;
+    }
+    while(nodeAtual != NULL) {
+        nextNode = nodeAtual->next;
+        free(nodeAtual);
+        nodeAtual = nextNode;
+    }
+    queue->head = NULL;
+    queue->tail = NULL;
+}
+
+// funcao que reseta a queue/lista e le os produtos novamente
+void lerProdutos(Queue *queue){
+    clearQueue(queue);
+    lerProdutosDoArquivo(queue);
+    printf("Produtos deletados e recarregados com sucesso!\n");
+}
+
+// funcao salva os produtos no txt
+void salvarProdutos(Queue *queue){
+    FILE *file = fopen("produtos.txt", "w");
+    if (file == NULL) {
+        puts("Erro ao abrir o arquivo...");
+        return;
+    }
+    Node *nodeAtual = queue->head;
+    if (nodeAtual == NULL) {
+        puts("Lista vazia!");
+        puts("Adicione um produto para salva-lo...");
+        fclose(file);
+        return;
+    }
+    while(nodeAtual != NULL) {
+        fprintf(file, "%lf\n", nodeAtual->data.id);
+        fprintf(file, "%s\n", nodeAtual->data.nome);
+        fprintf(file, "%lf\n", nodeAtual->data.preco);
+        fprintf(file, "%d\n", nodeAtual->data.estoque);
+        fprintf(file, "%d\n", nodeAtual->data.vendidos);
+        fprintf(file, "\n");
+        nodeAtual = nodeAtual->next;
+    }
+    puts("Produtos salvos com sucesso!");
+    fclose(file);
+}
+
+/* FUNCOES A SEREM IMPLEMENTADAS */
 
 void realizarVendas(Queue *queue){}
-
 void mostrarRelatorioDeVendas(Queue *queue){}
+
+/* FUNCOES FUNCIONANDO */
 
 void abrirSubmenuProdutos(Queue *queue){
     int opcaoMenu = 0;
@@ -286,7 +479,6 @@ void abrirSubmenuProdutos(Queue *queue){
         }
     }
 }
-
 void abrirSubmenuVendas(Queue *queue){
     int opcaoMenu = 0;
     while (opcaoMenu != 3) {
@@ -310,18 +502,17 @@ void abrirSubmenuVendas(Queue *queue){
         }
     }
 }
-
 void fecharAplicativo(Queue *queue) {
     free(queue);
     queue = NULL;
     exit(1);
 }
-
 int main() {
     int opcaoMenu = 0;
     Queue *queue = (Queue*)malloc(sizeof(Queue));
     queue->head = NULL;
     queue->tail = NULL;
+    lerProdutosDoArquivo(queue);
     while(1) {
         printf("\n|       MENU       |\n\n");
         printf("[1] Produtos\n[2] Vendas\n[3] Sair\nDigite um valor: ");
