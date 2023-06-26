@@ -15,10 +15,12 @@ typedef struct {
     int tempVendidos;
 } Produto;
 
-typedef struct {
-    double totalVendas;
-    double totalVendasTemp;
-} InfoVendas;
+typedef struct ItemCupomFiscal {
+    Produto *produtoVendido;
+    int quantidade;
+    float subtotal;
+    struct ItemCupomFiscal *prox;
+} ItemCupomFiscal;
 
 // estrutura do node (NODE === NO)
 typedef struct Node {
@@ -31,7 +33,6 @@ typedef struct Node {
 typedef struct {
     Node *head; // primeiro elemento da lista (head === cabeca)
     Node *tail; // ultimo elemento da lista (tail === rabo, cauda)
-    InfoVendas infoVenda;
 } Queue;
 
 /* FUNCOES IMPLEMENTADAS ==> NECESSARIO TESTE */
@@ -67,7 +68,7 @@ void printarLista(Queue *queue) {
 
 // funcao que cria e adiciona um novo node/no
 void inserirNode(Queue *queue, Produto produto) {
-    Node *novoNode = (Node*)malloc(sizeof(Node));
+    Node* novoNode = (Node*)malloc(sizeof(Node));
     novoNode->data = produto;
     novoNode->next = NULL;
     novoNode->prev = NULL;
@@ -443,92 +444,227 @@ void salvarProdutos(Queue *queue){
     fclose(file);
 }
 
-/* FUNCOES A SEREM IMPLEMENTADAS */
-void mostrarNotaFiscal(Queue *queue){
-    printf("ESTADO ATUAL DAS VENDAS:\n");
-    printf("TOTAL TEMP => %lf\n", queue->infoVenda.totalVendasTemp);
-};
+void mostrarNotaFiscal(ItemCupomFiscal *cupom, float total) {
+    float totalTemp = 0;
+    int item = 1;
 
-void pagarCompra(){};
+    printf("\n----------------------------------------------------------------------------\n");
+    printf("|                                NOTA FISCAL                               |\n");
+    printf("----------------------------------------------------------------------------\n");
+    printf("|%-10s|%-25s|%-15s|%-10s|%-15s|\n", "ITEM", "NOME", "VALOR UNIT.", "QUANT.", "SUB-TOTAL");
+    printf("----------------------------------------------------------------------------\n");
 
-bool verificarEstoque(Queue *queue) {
-    Node *nodeAtual = queue->head;
-    int produtosComEstoqueVazio = 0;
-    int numeroTotalDeProdutos = 0;
-    if (nodeAtual == NULL) {
-        return true;
+    ItemCupomFiscal *itemCupom = cupom;
+    while (itemCupom != NULL) {
+        Produto produto = *(itemCupom->produtoVendido);
+        printf("|%-10d|%-25s|R$%-13.2f|%-10d|R$%-13.2f|\n", item, produto.nome, produto.preco, itemCupom->quantidade, itemCupom->subtotal);
+        totalTemp += itemCupom->subtotal;
+        item++;
+        itemCupom = itemCupom->prox;
     }
-    while (nodeAtual != NULL) {
-        if (nodeAtual->data.estoque == 0) {
-            produtosComEstoqueVazio++;
+
+    printf("----------------------------------------------------------------------------\n");
+    printf("|%47s|%-10s|R$%-13.2f|\n", "", "TOTAL", totalTemp);
+    printf("----------------------------------------------------------------------------\n");
+}
+
+void pagarCompra(Queue *queue, float totalTemp, float *total) {
+    int metodo = 0, parcelas = 0;
+    float totalRecebido = 0, troco = 0;
+    
+    while (1) {
+        printf("\nEscolha um meio de pagamento: [1 para A VISTA / 2 para a PRAZO] => ");
+        if (scanf("%d", &metodo) != 1 || (metodo != 1 && metodo != 2)) {
+            mostrarErro("Metodo de pagamento invalido!");
         }
-        numeroTotalDeProdutos++;
-        nodeAtual = nodeAtual->next;
-    }
-    if (produtosComEstoqueVazio == numeroTotalDeProdutos) {
-        return true;
-    } else {
-        return false;
+        else {
+            if (metodo == 1) {
+                printf("Voce escolheu pagar a vista!\n");
+                if (totalTemp < 50) {
+                    totalTemp *= 0.95;
+                }
+                else if (totalTemp >= 50 && totalTemp <= 100) {
+                    totalTemp *= 0.9;
+                }
+                else {
+                    totalTemp *= 0.82;
+                }
+                printf("Valor total final (com desconto): R$%.2f\n", totalTemp);
+                while (1) {
+                    printf("\nDigite o valor recebido pelo caixa: R$ ");
+                    scanf("%f", &totalRecebido);
+                    if (totalRecebido < totalTemp) {
+                        printf("Valor invalido! Faltam R$ %.2f \n", totalTemp - totalRecebido);
+                    }
+                    else {
+                        troco = totalRecebido - totalTemp;
+                        if (troco > 0) {
+                            printf("Troco a ser retornado: R$%.2f \n", troco);
+                        }
+                        break;
+                    }
+                }
+            }
+            else {
+                printf("Voce escolheu pagar a prazo!\n");
+                while (1) {
+                    printf("\nEm quantas parcelas voce deseja pagar? ");
+                    if (scanf("%d", &parcelas) != 1 || parcelas < 1) {
+                        mostrarErro("Numero de parcelas invalido, digite um valor igual ou acima de 1 parcela!");
+                    }
+                    else {
+                        printf("Voce escolheu pagar em %d parcelas.\n", parcelas);
+                        if (parcelas <= 3) {
+                            totalTemp *= 1.05;
+                        }
+                        else {
+                            totalTemp *= 1.08;
+                        }
+                        printf("\nValor total final (com acrescimo): R$%.2f\n", totalTemp);
+                        printf("Valor da parcela: R$%.2f\n", totalTemp / parcelas);
+                        printf("Total de parcelas: %d\n", parcelas);
+                        break;
+                    }
+                }
+            }
+            
+            *total += totalTemp;
+            break;
+        }
     }
 }
 
-void realizarVendas(Queue *queue){
-    bool isEstoqueVazio = verificarEstoque(queue), isQuantidadeValida = false;
+/* FUNCOES A SEREM IMPLEMENTADAS OK*/ 
+
+void realizarVenda(Queue* queue, float* total) {
+    bool isEstoqueVazio = (queue->head == NULL);
     double idProduto = 0;
-    int quantidadeDesejada = 0, opcaoMenu = 0;
-    if (!isEstoqueVazio) {  
+    float totalTemp = 0;
+    int opcaoMenu = 0, quantidade = 0;
+    ItemCupomFiscal *cupom = NULL;
+
+    if (!isEstoqueVazio) {
         while (!isEstoqueVazio && (opcaoMenu != 2)) {
             exibirProdutos(queue);
             printf("\nDigite o ID do produto: ");
             if (scanf("%lf", &idProduto) != 1) {
                 mostrarErro("Valor invalido. Tente novamente!");
             } else {
-                Node *produtoSelecionado = verificarSeIdExiste(queue, idProduto);
-                if (produtoSelecionado == NULL) {
-                    puts("Produto nao encontrado!");
-                } else {
-                    if (produtoSelecionado->data.estoque != 0) {
-                        printf("Produto selecionado => %s\n", produtoSelecionado->data.nome);
-                        do {
-                            printf("Digite a quantidade desejada: ");
-                            if (scanf("%d", &quantidadeDesejada) != 1 || quantidadeDesejada > produtoSelecionado->data.estoque || quantidadeDesejada <= 0) {
-                                mostrarErro("\nQuantidade invalida ou insuficiente!");
+                Node* produtoNode = verificarSeIdExiste(queue, idProduto);
+                if (produtoNode != NULL && produtoNode->data.estoque != 0) {
+                    printf("Produto selecionado => %s\n", produtoNode->data.nome);
+                    do {
+                        printf("Digite a quantidade desejada: ");
+                        if (scanf("%d", &quantidade) != 1 || quantidade > produtoNode->data.estoque || quantidade == 0) {
+                            mostrarErro("\nQuantidade invalida ou insuficiente!");
+                        } else {
+                            printf("Produto adicionado ao carrinho!\n");
+                            totalTemp += produtoNode->data.preco * quantidade;
+                            produtoNode->data.tempVendidos = quantidade;
+                            produtoNode->data.estoque -= quantidade;
+                            produtoNode->data.vendidos += quantidade;
+
+                            ItemCupomFiscal *novoItem = (ItemCupomFiscal *)malloc(sizeof(ItemCupomFiscal));
+                            novoItem->produtoVendido = &(produtoNode->data);
+                            novoItem->quantidade = quantidade;
+                            novoItem->subtotal = produtoNode->data.preco * quantidade;
+                            novoItem->prox = NULL;
+
+                            if (cupom == NULL) {
+                                cupom = novoItem;
                             } else {
-                                printf("Produto adicionado ao carrinho!\n");
-                                queue->infoVenda.totalVendasTemp += produtoSelecionado->data.preco * quantidadeDesejada;
-                                printf("TOTAL QUEUE AGORA EH %lf\n", queue->infoVenda.totalVendasTemp);
-                                produtoSelecionado->data.tempVendidos = quantidadeDesejada;
-                                produtoSelecionado->data.estoque -= quantidadeDesejada;
-                                do {
-                                    printf("\nDeseja comprar mais um produto? [1 para SIM | 2 para NAO] => ");
-                                    if (scanf("%d", &opcaoMenu) != 1 || (opcaoMenu != 1 && opcaoMenu != 2)) {
-                                        mostrarErro("Valor invalido!");
-                                    } else {
-                                        isEstoqueVazio = verificarEstoque(queue);
-                                        if (isEstoqueVazio && opcaoMenu == 1) {
-                                            puts("\nTodos os itens estao indisponiveis. Cadastre-os primeiro!");
-                                        }
-                                    }
-                                
-                                } while (opcaoMenu != 1 && opcaoMenu != 2 && isEstoqueVazio == false);
+                                ItemCupomFiscal *itemAtual = cupom;
+                                while (itemAtual->prox != NULL) {
+                                    itemAtual = itemAtual->prox;
+                                }
+                                itemAtual->prox = novoItem;
                             }
-                        } while (opcaoMenu != 1 && opcaoMenu != 2 && isEstoqueVazio == false);
-                    } else {
-                        puts("Produto indisponivel!");
-                    }
+
+                            do {
+                                printf("\nDeseja comprar mais um produto? [1 para SIM | 2 para NAO] => ");
+                                if (scanf("%d", &opcaoMenu) != 1 || (opcaoMenu != 1 && opcaoMenu != 2)) {
+                                    mostrarErro("Valor invalido!");
+                                } else {
+                                    isEstoqueVazio = (queue->head == NULL);
+                                    if (isEstoqueVazio && opcaoMenu == 1) {
+                                        printf("\nTodos os itens estao indisponiveis. Cadastre-os primeiro!\n");
+                                    }
+                                }
+                            } while (opcaoMenu != 1 && opcaoMenu != 2 && !isEstoqueVazio);
+                        }
+                    } while (opcaoMenu != 1 && opcaoMenu != 2 && !isEstoqueVazio);
+                } else {
+                    printf("ID invalido ou produto indisponivel. Tente novamente!\n");
                 }
             }
         }
-        mostrarNotaFiscal(queue);
-        pagarCompra();
+        mostrarNotaFiscal(cupom, totalTemp);
+        pagarCompra(queue, totalTemp, total);
     } else {
-        puts("Lista vazia ou todos os produtos estao indisponiveis!");
-        puts("Adicione ou atualize um produto para realizar vendas...");
-        return;
+        printf("Todos os produtos estao com estoque indisponivel!\n");
     }
 }
 
-void mostrarRelatorioDeVendas(Queue *queue){}
+void mostrarRelatorioDeVendas(Queue *queue, float *total) {
+    int quantidadeProdutosComVenda = 0;
+    Node *atual = queue->head;
+    
+    while (atual != NULL) {
+        if (atual->data.vendidos > 0) {
+            quantidadeProdutosComVenda++;
+        }
+        atual = atual->next;
+    }
+    
+    if (quantidadeProdutosComVenda > 0) {
+        time_t a_m_d_h_m_s = time(NULL);
+        struct tm* tempo = localtime(&a_m_d_h_m_s);
+        char data[25];
+        strftime(data, sizeof(data), "%y-%m-%d_%H-%M-%S", tempo);
+        char vendas[25];
+        snprintf(vendas, sizeof(vendas), "%s.txt", data);
+        
+        FILE* file;
+        file = fopen(vendas, "w");
+        if (file == NULL) {
+            printf("Erro ao criar o arquivo com o relatorio.");
+            exit(1);
+        }
+        
+        printf("\n-------------------------------------------------------------------------------------------------\n");
+        printf("|                                  RELATORIO DE VENDAS                                          |\n");
+        printf("-------------------------------------------------------------------------------------------------\n");
+        printf("|%-12s|%-17s|%-19s|%-15s|%-15s\t|\n", "CODIGO", "ITEM", "VALOR TOTAL POR UN.", "ESTOQUE FINAL", "QUANTIDADE VENDIDA POR UN.");
+        printf("-------------------------------------------------------------------------------------------------\n");
+        fprintf(file, "-------------------------------------------------------------------------------------------------\n");
+        fprintf(file, "|                                  RELATORIO DE VENDAS                                          |\n");
+        fprintf(file, "-------------------------------------------------------------------------------------------------\n");
+        fprintf(file, "|%-12s|%-17s|%-19s|%-15s|%-15s\t|\n", "CODIGO", "ITEM", "VALOR TOTAL POR UN.", "ESTOQUE FINAL", "QUANTIDADE VENDIDA POR UN.");
+        fprintf(file, "-------------------------------------------------------------------------------------------------\n");
+        
+        atual = queue->head;
+        while (atual != NULL) {
+            if (atual->data.vendidos > 0) {
+                printf("|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", atual->data.id, atual->data.nome, atual->data.preco * atual->data.vendidos, atual->data.estoque, atual->data.vendidos);
+                fprintf(file, "|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", atual->data.id, atual->data.nome, atual->data.preco * atual->data.vendidos, atual->data.estoque, atual->data.vendidos);
+            }
+            atual = atual->next;
+        }
+        
+        printf("-------------------------------------------------------------------------------------------------\n");
+        printf("|%30s|%-35s|R$%-18.2f\t|\n", "", "VALOR TOTAL VENDIDO", *total);
+        printf("-------------------------------------------------------------------------------------------------\n");
+        fprintf(file, "-------------------------------------------------------------------------------------------------\n");
+        fprintf(file, "|%30s|%-35s|R$%-18.2f\t|\n", "", "VALOR TOTAL VENDIDO", *total);
+        fprintf(file, "-------------------------------------------------------------------------------------------------\n");
+        
+        fclose(file);
+        printf("Relatorio criado e salvo no arquivo: %s\n", vendas);
+    }
+    else {
+        printf("Realize uma venda primeiro!\n");
+    }
+}
 
 /* FUNCOES FUNCIONANDO */
 
@@ -567,7 +703,7 @@ void abrirSubmenuProdutos(Queue *queue){
         }
     }
 }
-void abrirSubmenuVendas(Queue *queue){
+void abrirSubmenuVendas(Queue *queue, float *total){
     int opcaoMenu = 0;
     while (opcaoMenu != 3) {
         printf("\n|       VENDAS       |\n\n");
@@ -578,10 +714,10 @@ void abrirSubmenuVendas(Queue *queue){
         else {
             switch (opcaoMenu) {
                 case 1:
-                    realizarVendas(queue);
+                    realizarVenda(queue, total);
                     break;
                 case 2:
-                    mostrarRelatorioDeVendas(queue);
+                    mostrarRelatorioDeVendas(queue, total);
                     break;
                 case 3:
                     printf("Voltando ao menu principal...\n");
@@ -597,11 +733,10 @@ void fecharAplicativo(Queue *queue) {
 }
 int main() {
     int opcaoMenu = 0;
-    Queue *queue = (Queue*)malloc(sizeof(Queue));
+    float total = 0;
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
     queue->head = NULL;
     queue->tail = NULL;
-    queue->infoVenda.totalVendas = 0;
-    queue->infoVenda.totalVendasTemp = 0;
     lerProdutosDoArquivo(queue);
     while(1) {
         printf("\n|       MENU       |\n\n");
@@ -614,7 +749,7 @@ int main() {
                     abrirSubmenuProdutos(queue);
                     break;
                 case 2:
-                    abrirSubmenuVendas(queue);
+                    abrirSubmenuVendas(queue, &total);
                     break;
                 case 3:
                     printf("Fechando aplicativo...");

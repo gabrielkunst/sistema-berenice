@@ -1,0 +1,7 @@
+# Format Style Options - Created with Clang Power Tools
+---
+BasedOnStyle: WebKit
+BreakBeforeBraces: Attach
+ColumnLimit: 240
+DerivePointerAlignment: true
+SpaceAfterCStyleCast: true

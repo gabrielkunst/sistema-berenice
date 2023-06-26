@@ -15,79 +15,128 @@ typedef struct {
 } Produto;
 
 typedef struct ItemCupomFiscal {
-    Produto *produtoVendido;
+    Produto * produtoVendido;
     int quantidade;
     bool vendido;
     double subtotal;
-    struct ItemCupomFiscal *prox;
+    struct ItemCupomFiscal * prox;
 } ItemCupomFiscal;
 
 typedef struct Node {
     Produto data;
-    struct Node *next;
-    struct Node *prev;
+    struct Node * next;
+    struct Node * prev;
 } Node;
 
 typedef struct {
-    Node *head;
-    Node *tail;
+    Node * head;
+    Node * tail;
 } Queue;
 
 typedef struct {
-    ItemCupomFiscal *head;
+    ItemCupomFiscal * head;
     double total;
 } QueueVendas;
 
-void inserirNode(Queue *queue, Produto produto) {
-    Node *novoNode = (Node *) malloc(sizeof(Node));
-    novoNode->data = produto;
-    novoNode->next = NULL;
-    novoNode->prev = NULL;
-    if (queue->head == NULL) {
-        queue->head = novoNode;
-        queue->tail = novoNode;
-    } else if (novoNode->data.id < queue->head->data.id) {
-        novoNode->next = queue->head;
-        queue->head->prev = novoNode;
-        queue->head = novoNode;
-    } else {
-        Node *nodeAtual = queue->head;
-        while (nodeAtual->next != NULL && novoNode->data.id > nodeAtual->next->data.id) {
-            nodeAtual = nodeAtual->next;
+void printarLista(Queue * queue, QueueVendas * queueVendas) {
+    Node * currentNode = queue -> head;
+    printf("\n|       QUEUE       |\n");
+    if (queue -> head != NULL) {
+        printf("HEAD: %.2lf\n", queue -> head -> data.id);
+    }
+    if (queue -> tail != NULL) {
+        printf("TAIL: %.2lf\n", queue -> tail -> data.id);
+    }
+    while (currentNode != NULL) {
+        printf("\n|       NODE        |\n");
+        printf("ID: %.2lf\n", currentNode -> data.id);
+        printf("NAME: %s\n", currentNode -> data.nome);
+        printf("PRICE: %.2lf\n", currentNode -> data.preco);
+        if (currentNode -> prev == NULL) {
+            printf("PREV ID: NULL\n");
+        } else {
+            printf("PREV ID: %.2lf\n", currentNode -> prev -> data.id);
         }
-        novoNode->next = nodeAtual->next;
-        if (nodeAtual->next != NULL) {
-            nodeAtual->next->prev = novoNode;
+        if (currentNode -> next != NULL) {
+            printf("NEXT ID: %.2lf\n", currentNode -> next -> data.id);
+        } else {
+            printf("NEXT ID: NULL\n");
         }
-        novoNode->prev = nodeAtual;
-        nodeAtual->next = novoNode;
-        while (nodeAtual->next != NULL) {
-            nodeAtual = nodeAtual->next;
+        currentNode = currentNode -> next;
+    }
+    printf("\n|        END        |\n");
+    printf("\n");
+    ItemCupomFiscal * vendaAtual = queueVendas -> head;
+    if (vendaAtual != NULL) {
+        printf("\n|        VENDAS        |\n");
+        while (vendaAtual != NULL) {
+            printf("\n|         VENDA        |\n");
+            printf("ID: %.2lf\n", vendaAtual -> produtoVendido -> id);
+            printf("NAME: %s\n", vendaAtual -> produtoVendido -> nome);
+            printf("PRICE: %.2lf\n", vendaAtual -> produtoVendido -> preco);
+            printf("QUANTIDADE: %.2lf\n", vendaAtual -> quantidade);
+            printf("SUBTOTAL: %.2lf\n", vendaAtual -> subtotal);
+            if (vendaAtual -> prox != NULL) {
+                printf("NEXT NODE: %.2lf\n", vendaAtual -> prox -> produtoVendido -> id);
+            }
+            printf("TOTAL ATUAL => %.2lf\n", queueVendas -> total);
+            printf("\n");
+            vendaAtual = vendaAtual -> prox;
         }
-        queue->tail = nodeAtual;
+        printf("\n|         END        |\n");
     }
 }
 
-void deletarNode(Queue *queue, double produtoId) {
-    Node *nodeAtual = queue->head;
-    while (nodeAtual != NULL && nodeAtual->data.id != produtoId) {
-        nodeAtual = nodeAtual->next;
+void inserirNode(Queue * queue, Produto produto) {
+    Node * novoNode = (Node * ) malloc(sizeof(Node));
+    novoNode -> data = produto;
+    novoNode -> next = NULL;
+    novoNode -> prev = NULL;
+    if (queue -> head == NULL) {
+        queue -> head = novoNode;
+        queue -> tail = novoNode;
+    } else if (novoNode -> data.id < queue -> head -> data.id) {
+        novoNode -> next = queue -> head;
+        queue -> head -> prev = novoNode;
+        queue -> head = novoNode;
+    } else {
+        Node * nodeAtual = queue -> head;
+        while (nodeAtual -> next != NULL && novoNode -> data.id > nodeAtual -> next -> data.id) {
+            nodeAtual = nodeAtual -> next;
+        }
+        novoNode -> next = nodeAtual -> next;
+        if (nodeAtual -> next != NULL) {
+            nodeAtual -> next -> prev = novoNode;
+        }
+        novoNode -> prev = nodeAtual;
+        nodeAtual -> next = novoNode;
+        while (nodeAtual -> next != NULL) {
+            nodeAtual = nodeAtual -> next;
+        }
+        queue -> tail = nodeAtual;
     }
-    if (nodeAtual->prev == NULL) {
-        if (nodeAtual->next == NULL) {
-            queue->head = NULL;
-            queue->tail = NULL;
+}
+
+void deletarNode(Queue * queue, double produtoId) {
+    Node * nodeAtual = queue -> head;
+    while (nodeAtual != NULL && nodeAtual -> data.id != produtoId) {
+        nodeAtual = nodeAtual -> next;
+    }
+    if (nodeAtual -> prev == NULL) {
+        if (nodeAtual -> next == NULL) {
+            queue -> head = NULL;
+            queue -> tail = NULL;
         } else {
-            nodeAtual->next->prev = NULL;
-            queue->head = nodeAtual->next;
+            nodeAtual -> next -> prev = NULL;
+            queue -> head = nodeAtual -> next;
         }
     } else {
-        if (nodeAtual->next == NULL) {
-            queue->tail = nodeAtual->prev;
-            nodeAtual->prev->next = NULL;
+        if (nodeAtual -> next == NULL) {
+            queue -> tail = nodeAtual -> prev;
+            nodeAtual -> prev -> next = NULL;
         } else {
-            nodeAtual->prev->next = nodeAtual->next;
-            nodeAtual->next->prev = nodeAtual->prev;
+            nodeAtual -> prev -> next = nodeAtual -> next;
+            nodeAtual -> next -> prev = nodeAtual -> prev;
         }
     }
     free(nodeAtual);
@@ -100,50 +149,51 @@ void mostrarErro(char message[]) {
     }
 }
 
-bool temApenasEspacos(char *nomeProduto) {
-    while (*nomeProduto != '\0') {
-        if (*nomeProduto != ' ')
+bool temApenasEspacos(char * nomeProduto) {
+    while ( * nomeProduto != '\0') {
+        if ( * nomeProduto != ' ')
             return false;
         nomeProduto++;
     }
     return true;
 }
 
-Node *verificarSeIdExiste(Queue *queue, double idProduto) {
-    Node *nodeAtual = queue->head;
+Node * verificarSeIdExiste(Queue * queue, double idProduto) {
+    Node * nodeAtual = queue -> head;
     while (nodeAtual != NULL) {
-        if (nodeAtual->data.id == idProduto) {
+        if (nodeAtual -> data.id == idProduto) {
             return nodeAtual;
         }
-        nodeAtual = nodeAtual->next;
+        nodeAtual = nodeAtual -> next;
     }
     return NULL;
 }
 
-void exibirProdutos(Queue *queue, QueueVendas *queueVendas) {
-    Node *nodeAtual = queue->head;
+void exibirProdutos(Queue * queue, QueueVendas * queueVendas) {
+    Node * nodeAtual = queue -> head;
     if (nodeAtual == NULL) {
         puts("Lista vazia!");
         puts("Adicione um produto para mostra-lo...");
         return;
     }
+    printarLista(queue, queueVendas);
     printf("\n-----------------------------------------------------------------\n");
     printf("|                           PRODUTOS                            |\n");
     printf("-----------------------------------------------------------------\n");
     printf("|%-12s|%-25s|%-12s|%-10s\t|\n", "CODIGO", "ITEM", "PRECO", "ESTOQUE");
     printf("-----------------------------------------------------------------\n");
     while (nodeAtual != NULL) {
-        printf("|%-12.0lf|%-25s|R$%-10.2lf|%-10d\t|\n", nodeAtual->data.id, nodeAtual->data.nome, nodeAtual->data.preco, nodeAtual->data.estoque);
-        nodeAtual = nodeAtual->next;
+        printf("|%-12.0lf|%-25s|R$%-10.2lf|%-10d\t|\n", nodeAtual -> data.id, nodeAtual -> data.nome, nodeAtual -> data.preco, nodeAtual -> data.estoque);
+        nodeAtual = nodeAtual -> next;
     }
     printf("-----------------------------------------------------------------\n");
 }
 
-void cadastrarProdutos(Queue *queue) {
+void cadastrarProdutos(Queue * queue) {
     int quantidadeParaCadastar = 0;
     while (1) {
         printf("Quantidade de produtos a serem cadastrados: ");
-        if (scanf("%d", &quantidadeParaCadastar) != 1 || quantidadeParaCadastar <= 0) {
+        if (scanf("%d", & quantidadeParaCadastar) != 1 || quantidadeParaCadastar <= 0) {
             mostrarErro("Quantidade invalida!\n");
         } else {
             for (int i = 0; i < quantidadeParaCadastar; i++) {
@@ -153,10 +203,10 @@ void cadastrarProdutos(Queue *queue) {
                 printf("\nDigite as informacoes do produto: \n");
                 do {
                     printf("ID: ");
-                    if (scanf("%lf", &produtoTemporario.id) != 1 || produtoTemporario.id <= 0) {
+                    if (scanf("%lf", & produtoTemporario.id) != 1 || produtoTemporario.id <= 0) {
                         mostrarErro("ID invalido! ID precisa ser maior que zero e apenas numeros...\n");
                     } else {
-                        Node *matchingNode = verificarSeIdExiste(queue, produtoTemporario.id);
+                        Node * matchingNode = verificarSeIdExiste(queue, produtoTemporario.id);
                         if (matchingNode != NULL) {
                             puts("Codigo ja existente\n");
                         } else {
@@ -181,7 +231,7 @@ void cadastrarProdutos(Queue *queue) {
                 } while (!nomeValido);
                 do {
                     printf("Preco: R$");
-                    if (scanf("%lf", &produtoTemporario.preco) != 1 || produtoTemporario.preco < 0) {
+                    if (scanf("%lf", & produtoTemporario.preco) != 1 || produtoTemporario.preco < 0) {
                         mostrarErro("Preco invalido! Preco deve ser maior ou igual a zero...\n");
                     } else {
                         precoValido = true;
@@ -189,7 +239,7 @@ void cadastrarProdutos(Queue *queue) {
                 } while (!precoValido);
                 do {
                     printf("Estoque: ");
-                    if (scanf("%d", &produtoTemporario.estoque) != 1 || produtoTemporario.estoque < 0) {
+                    if (scanf("%d", & produtoTemporario.estoque) != 1 || produtoTemporario.estoque < 0) {
                         mostrarErro("Estoque invalido! Estoque precisa ser maior ou igual a zero...\n");
                     } else {
                         estoqueValido = true;
@@ -204,8 +254,8 @@ void cadastrarProdutos(Queue *queue) {
     }
 }
 
-void atualizarProdutos(Queue *queue, QueueVendas *queueVendas) {
-    Node *nodeAtual = queue->head;
+void atualizarProdutos(Queue * queue, QueueVendas * queueVendas) {
+    Node * nodeAtual = queue -> head;
     double idProduto = 0, novoValorUnitario = 0;
     int opcaoMenu = 0, novoEstoque = 0;
     bool operacaoConcluida = false;
@@ -217,18 +267,18 @@ void atualizarProdutos(Queue *queue, QueueVendas *queueVendas) {
     do {
         exibirProdutos(queue, queueVendas);
         printf("Digite o ID do produto: ");
-        if (scanf("%lf", &idProduto) != 1) {
+        if (scanf("%lf", & idProduto) != 1) {
             mostrarErro("ID invalido!\n");
         } else {
-            Node *matchingNode = verificarSeIdExiste(queue, idProduto);
+            Node * matchingNode = verificarSeIdExiste(queue, idProduto);
             if (matchingNode == NULL) {
                 puts("Produto nao encontrado...");
             } else {
                 nodeAtual = matchingNode;
-                printf("Produto selecionado => %s\n", nodeAtual->data.nome);
+                printf("Produto selecionado => %s\n", nodeAtual -> data.nome);
                 do {
                     printf("[1] Quantidade\n[2] Valor Unitario\nO que voce deseja alterar? ");
-                    if ((scanf("%d", &opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
+                    if ((scanf("%d", & opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
                         mostrarErro("Valor invalido!\n");
                     } else {
                         if (opcaoMenu == 1) {
@@ -236,16 +286,16 @@ void atualizarProdutos(Queue *queue, QueueVendas *queueVendas) {
                             do {
                                 opcaoMenu = 0;
                                 printf("Digite a nova quantidade: ");
-                                if (scanf("%d", &novoEstoque) != 1 || novoEstoque < 0) {
+                                if (scanf("%d", & novoEstoque) != 1 || novoEstoque < 0) {
                                     mostrarErro("Valor invalido!\n");
                                 } else {
                                     do {
-                                        printf("[ESTOQUE ANTIGO] => %d\n[ESTOQUE NOVO] => %d\nVoce deseja fazer a alteracao acima? [1] SIM | [2] NAO: ", nodeAtual->data.estoque, novoEstoque);
-                                        if ((scanf("%d", &opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
+                                        printf("[ESTOQUE ANTIGO] => %d\n[ESTOQUE NOVO] => %d\nVoce deseja fazer a alteracao acima? [1] SIM | [2] NAO: ", nodeAtual -> data.estoque, novoEstoque);
+                                        if ((scanf("%d", & opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
                                             mostrarErro("Valor invalido!\n");
                                         } else {
                                             if (opcaoMenu == 1) {
-                                                nodeAtual->data.estoque = novoEstoque;
+                                                nodeAtual -> data.estoque = novoEstoque;
                                                 printf("Alteracao feita com sucesso!\n");
                                             } else {
                                                 printf("Alteracao cancelada!\n");
@@ -261,16 +311,16 @@ void atualizarProdutos(Queue *queue, QueueVendas *queueVendas) {
                             do {
                                 opcaoMenu = 0;
                                 printf("Digite o novo valor: ");
-                                if (scanf("%lf", &novoValorUnitario) != 1 || novoValorUnitario < 0) {
+                                if (scanf("%lf", & novoValorUnitario) != 1 || novoValorUnitario < 0) {
                                     mostrarErro("Valor invalido!\n");
                                 } else {
                                     do {
-                                        printf("[VALOR ANTIGO] => R$ %.2lf\n[VALOR NOVO] => R$ %.2lf\nVoce deseja fazer a alteracao acima? [1] SIM | [2] NAO: ", nodeAtual->data.preco, novoValorUnitario);
-                                        if ((scanf("%d", &opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
+                                        printf("[VALOR ANTIGO] => R$ %.2lf\n[VALOR NOVO] => R$ %.2lf\nVoce deseja fazer a alteracao acima? [1] SIM | [2] NAO: ", nodeAtual -> data.preco, novoValorUnitario);
+                                        if ((scanf("%d", & opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
                                             mostrarErro("Valor invalido!\n");
                                         } else {
                                             if (opcaoMenu == 1) {
-                                                nodeAtual->data.preco = novoValorUnitario;
+                                                nodeAtual -> data.preco = novoValorUnitario;
                                                 printf("Alteracao feita com sucesso!\n");
                                             } else {
                                                 printf("Alteracao cancelada!\n");
@@ -289,24 +339,24 @@ void atualizarProdutos(Queue *queue, QueueVendas *queueVendas) {
     } while (opcaoMenu != 1 && opcaoMenu != 2);
 }
 
-void excluirProdutos(Queue *queue, QueueVendas *queueVendas) {
-    Node *nodeAtual = queue->head;
+void excluirProdutos(Queue * queue, QueueVendas * queueVendas) {
+    Node * nodeAtual = queue -> head;
     if (nodeAtual == NULL) {
         puts("Lista vazia!");
         puts("Adicione um produto para exclui-lo...");
         return;
     } else {
-        Node *produtoDeletado = NULL;
+        Node * produtoDeletado = NULL;
         int opcaoMenu = 0;
         double idProduto = 0;
         bool idValido = false;
         exibirProdutos(queue, queueVendas);
         do {
             printf("Informe o ID do produto que voce deseja excluir: ");
-            if (scanf("%lf", &idProduto) != 1) {
+            if (scanf("%lf", & idProduto) != 1) {
                 mostrarErro("ID invalido! Tente novamente...\n");
             } else {
-                Node *matchingNode = verificarSeIdExiste(queue, idProduto);
+                Node * matchingNode = verificarSeIdExiste(queue, idProduto);
                 if (matchingNode == NULL) {
                     puts("Produto nao encontrado...\n");
                 } else {
@@ -316,12 +366,12 @@ void excluirProdutos(Queue *queue, QueueVendas *queueVendas) {
             }
         } while (!idValido);
         do {
-            printf("Deseja realmente excluir o produto %s? [1] SIM | [2] NAO: ", produtoDeletado->data.nome);
-            if ((scanf("%d", &opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
+            printf("Deseja realmente excluir o produto %s? [1] SIM | [2] NAO: ", produtoDeletado -> data.nome);
+            if ((scanf("%d", & opcaoMenu) != 1) || (opcaoMenu != 1 && opcaoMenu != 2)) {
                 mostrarErro("Valor invalido!\n");
             } else {
                 if (opcaoMenu == 1) {
-                    deletarNode(queue, produtoDeletado->data.id);
+                    deletarNode(queue, produtoDeletado -> data.id);
                     puts("Produto deletado.");
                 } else {
                     puts("\nA exclusao do produto foi cancelada.");
@@ -331,8 +381,8 @@ void excluirProdutos(Queue *queue, QueueVendas *queueVendas) {
     }
 }
 
-void lerProdutosDoArquivo(Queue *queue) {
-    FILE *file = fopen("produtos.txt", "r");
+void lerProdutosDoArquivo(Queue * queue) {
+    FILE * file = fopen("produtos.txt", "r");
     bool primeiroProduto = true;
     if (file == NULL) {
         puts("Erro ao abrir o arquivo...");
@@ -340,21 +390,21 @@ void lerProdutosDoArquivo(Queue *queue) {
     }
     char linha[MAX_NAME_LENGTH];
     Produto produtoTemporario;
-    while (fscanf(file, "%lf", &produtoTemporario.id) == 1) {
+    while (fscanf(file, "%lf", & produtoTemporario.id) == 1) {
         fgetc(file);
         fgets(linha, MAX_NAME_LENGTH, file);
         strtok(linha, "\n");
         strcpy(produtoTemporario.nome, linha);
-        fscanf(file, "%lf", &produtoTemporario.preco);
-        fscanf(file, "%d", &produtoTemporario.estoque);
-        fscanf(file, "%d", &produtoTemporario.vendidos);
+        fscanf(file, "%lf", & produtoTemporario.preco);
+        fscanf(file, "%d", & produtoTemporario.estoque);
+        fscanf(file, "%d", & produtoTemporario.vendidos);
         fgetc(file);
         inserirNode(queue, produtoTemporario);
     }
     fclose(file);
 }
 
-void clearQueueVendas(QueueVendas *queueVendas) {
+void clearQueueVendas(QueueVendas * queueVendas) {
     ItemCupomFiscal *nodeAtual = queueVendas->head;
     ItemCupomFiscal *nextNode;
     if (nodeAtual == NULL) {
@@ -370,34 +420,34 @@ void clearQueueVendas(QueueVendas *queueVendas) {
     queueVendas->total = 0.0;
 }
 
-void clearQueue(Queue *queue) {
-    Node *nodeAtual = queue->head;
-    Node *nextNode;
+void clearQueue(Queue * queue) {
+    Node * nodeAtual = queue -> head;
+    Node * nextNode;
     if (nodeAtual == NULL) {
         return;
     }
     while (nodeAtual != NULL) {
-        nextNode = nodeAtual->next;
+        nextNode = nodeAtual -> next;
         free(nodeAtual);
         nodeAtual = nextNode;
     }
-    queue->head = NULL;
-    queue->tail = NULL;
+    queue -> head = NULL;
+    queue -> tail = NULL;
 }
 
-void lerProdutos(Queue *queue) {
+void lerProdutos(Queue * queue) {
     clearQueue(queue);
     lerProdutosDoArquivo(queue);
     printf("Produtos deletados e recarregados com sucesso!\n");
 }
 
-void salvarProdutos(Queue *queue) {
-    FILE *file = fopen("produtos.txt", "w");
+void salvarProdutos(Queue * queue) {
+    FILE * file = fopen("produtos.txt", "w");
     if (file == NULL) {
         puts("Erro ao abrir o arquivo...");
         return;
     }
-    Node *nodeAtual = queue->head;
+    Node * nodeAtual = queue -> head;
     if (nodeAtual == NULL) {
         puts("Lista vazia!");
         puts("Adicione um produto para salva-lo...");
@@ -405,46 +455,46 @@ void salvarProdutos(Queue *queue) {
         return;
     }
     while (nodeAtual != NULL) {
-        fprintf(file, "%lf\n", nodeAtual->data.id);
-        fprintf(file, "%s\n", nodeAtual->data.nome);
-        fprintf(file, "%lf\n", nodeAtual->data.preco);
-        fprintf(file, "%d\n", nodeAtual->data.estoque);
-        fprintf(file, "%d\n", nodeAtual->data.vendidos);
+        fprintf(file, "%lf\n", nodeAtual -> data.id);
+        fprintf(file, "%s\n", nodeAtual -> data.nome);
+        fprintf(file, "%lf\n", nodeAtual -> data.preco);
+        fprintf(file, "%d\n", nodeAtual -> data.estoque);
+        fprintf(file, "%d\n", nodeAtual -> data.vendidos);
         fprintf(file, "\n");
-        nodeAtual = nodeAtual->next;
+        nodeAtual = nodeAtual -> next;
     }
     puts("Produtos salvos com sucesso!");
     fclose(file);
 }
 
-void mostrarNotaFiscal(QueueVendas *queueVendas, double totalTemp) {
+void mostrarNotaFiscal(QueueVendas * queueVendas, double totalTemp) {
     printf("\n----------------------------------------------------------------------------\n");
     printf("|                                NOTA FISCAL                               |\n");
     printf("----------------------------------------------------------------------------\n");
     printf("|%-10s|%-25s|%-15s|%-10s|%-15s|\n", "ITEM", "NOME", "VALOR UNIT.", "QUANT.", "SUB-TOTAL");
     printf("----------------------------------------------------------------------------\n");
-    ItemCupomFiscal *itemCupom = queueVendas->head;
+    ItemCupomFiscal * itemCupom = queueVendas -> head;
     int item = 1;
     while (itemCupom != NULL) {
-        if (!itemCupom->vendido) {
-            Produto produto = *(itemCupom->produtoVendido);
-            printf("|%-10d|%-25s|R$%-13.2lf|%-10d|R$%-13.2lf|\n", item, produto.nome, produto.preco, itemCupom->quantidade, itemCupom->subtotal);
-            itemCupom->vendido = true;
+        if (!itemCupom -> vendido) {
+            Produto produto = * (itemCupom -> produtoVendido);
+            printf("|%-10d|%-25s|R$%-13.2lf|%-10d|R$%-13.2lf|\n", item, produto.nome, produto.preco, itemCupom -> quantidade, itemCupom -> subtotal);
+            itemCupom -> vendido = true;
             item++;
         }
-        itemCupom = itemCupom->prox;
+        itemCupom = itemCupom -> prox;
     }
     printf("----------------------------------------------------------------------------\n");
     printf("|%47s|%-10s|R$%-13.2lf|\n", "", "TOTAL", totalTemp);
     printf("----------------------------------------------------------------------------\n");
 }
 
-void pagarCompra(Queue *queue, double totalTemp, QueueVendas *queueVendas) {
+void pagarCompra(Queue * queue, double totalTemp, QueueVendas * queueVendas) {
     int metodo = 0, parcelas = 0;
     double totalRecebido = 0, troco = 0;
     while (1) {
         printf("\nEscolha um meio de pagamento: [1 para A VISTA / 2 para a PRAZO] => ");
-        if (scanf("%d", &metodo) != 1 || (metodo != 1 && metodo != 2)) {
+        if (scanf("%d", & metodo) != 1 || (metodo != 1 && metodo != 2)) {
             mostrarErro("Metodo de pagamento invalido!");
         } else {
             if (metodo == 1) {
@@ -459,7 +509,7 @@ void pagarCompra(Queue *queue, double totalTemp, QueueVendas *queueVendas) {
                 printf("Valor total final (com desconto): R$%.2lf\n", totalTemp);
                 while (1) {
                     printf("\nDigite o valor recebido pelo caixa: R$ ");
-                    scanf("%lf", &totalRecebido);
+                    scanf("%lf", & totalRecebido);
                     if (totalRecebido < totalTemp) {
                         printf("Valor invalido! Faltam R$ %.2lf \n", totalTemp - totalRecebido);
                     } else {
@@ -474,7 +524,7 @@ void pagarCompra(Queue *queue, double totalTemp, QueueVendas *queueVendas) {
                 printf("Voce escolheu pagar a prazo!\n");
                 while (1) {
                     printf("\nEm quantas parcelas voce deseja pagar? ");
-                    if (scanf("%d", &parcelas) != 1 || parcelas < 1) {
+                    if (scanf("%d", & parcelas) != 1 || parcelas < 1) {
                         mostrarErro("Numero de parcelas invalido, digite um valor igual ou acima de 1 parcela!");
                     } else {
                         printf("Voce escolheu pagar em %d parcelas.\n", parcelas);
@@ -490,54 +540,54 @@ void pagarCompra(Queue *queue, double totalTemp, QueueVendas *queueVendas) {
                     }
                 }
             }
-            queueVendas->total += totalTemp;
+            queueVendas -> total += totalTemp;
             break;
         }
     }
 }
 
-bool estoqueEstaVazio(Queue *queue) {
-    Node *nodeAtual = queue->head;
+bool estoqueEstaVazio(Queue * queue) {
+    Node * nodeAtual = queue -> head;
     int produtosComEstoqueVazio = 0;
     int numeroTotalDeProdutos = 0;
     if (nodeAtual == NULL) {
         return true;
     } else {
-        while (nodeAtual->next != NULL) {
+        while (nodeAtual -> next != NULL) {
             numeroTotalDeProdutos++;
-            if (nodeAtual->data.estoque == 0) {
+            if (nodeAtual -> data.estoque == 0) {
                 produtosComEstoqueVazio++;
             }
-            nodeAtual = nodeAtual->next;
+            nodeAtual = nodeAtual -> next;
         }
         return (produtosComEstoqueVazio == numeroTotalDeProdutos);
     }
 }
 
-void inserirNovaVenda(QueueVendas *queueVendas, ItemCupomFiscal novaVenda) {
-    ItemCupomFiscal *novaVendaNode = (ItemCupomFiscal *) malloc(sizeof(ItemCupomFiscal));
-    novaVendaNode->produtoVendido = novaVenda.produtoVendido;
-    novaVendaNode->quantidade = novaVenda.quantidade;
-    novaVendaNode->vendido = novaVenda.vendido;
-    novaVendaNode->subtotal = novaVenda.subtotal;
-    novaVendaNode->prox = novaVenda.prox;
-    if (queueVendas->head == NULL) {
-        queueVendas->head = novaVendaNode;
-    } else if (novaVendaNode->subtotal > queueVendas->head->subtotal) {
-        novaVendaNode->prox = queueVendas->head;
-        queueVendas->head = novaVendaNode;
+void inserirNovaVenda(QueueVendas * queueVendas, ItemCupomFiscal novaVenda) {
+    ItemCupomFiscal * novaVendaNode = (ItemCupomFiscal * ) malloc(sizeof(ItemCupomFiscal));
+    novaVendaNode -> produtoVendido = novaVenda.produtoVendido;
+    novaVendaNode -> quantidade = novaVenda.quantidade;
+    novaVendaNode -> vendido = novaVenda.vendido;
+    novaVendaNode -> subtotal = novaVenda.subtotal;
+    novaVendaNode -> prox = novaVenda.prox;
+    if (queueVendas -> head == NULL) {
+        queueVendas -> head = novaVendaNode;
+    } else if (novaVendaNode -> subtotal > queueVendas -> head -> subtotal) {
+        novaVendaNode -> prox = queueVendas -> head;
+        queueVendas -> head = novaVendaNode;
     } else {
-        ItemCupomFiscal *nodeAtual = queueVendas->head;
-        while (nodeAtual->prox != NULL && novaVendaNode->subtotal < nodeAtual->prox->subtotal) {
-            nodeAtual = nodeAtual->prox;
+        ItemCupomFiscal * nodeAtual = queueVendas -> head;
+        while (nodeAtual -> prox != NULL && novaVendaNode -> subtotal < nodeAtual -> prox -> subtotal) {
+            nodeAtual = nodeAtual -> prox;
         }
-        novaVendaNode->prox = nodeAtual->prox;
-        nodeAtual->prox = novaVendaNode;
+        novaVendaNode -> prox = nodeAtual -> prox;
+        nodeAtual -> prox = novaVendaNode;
     }
 }
 
-void realizarVenda(Queue *queue, QueueVendas *queueVendas) {
-    if (queue->head != NULL) {
+void realizarVenda(Queue * queue, QueueVendas * queueVendas) {
+    if (queue -> head != NULL) {
         bool isEstoqueVazio = estoqueEstaVazio(queue);
         double idProduto = 0;
         double totalTemp = 0;
@@ -546,32 +596,32 @@ void realizarVenda(Queue *queue, QueueVendas *queueVendas) {
             while (!isEstoqueVazio && (opcaoMenu != 2)) {
                 exibirProdutos(queue, queueVendas);
                 printf("\nDigite o ID do produto: ");
-                if (scanf("%lf", &idProduto) != 1) {
+                if (scanf("%lf", & idProduto) != 1) {
                     mostrarErro("Valor invalido. Tente novamente!");
                 } else {
-                    Node *produtoNode = verificarSeIdExiste(queue, idProduto);
-                    if (produtoNode != NULL && produtoNode->data.estoque != 0) {
-                        printf("Produto selecionado => %s\n", produtoNode->data.nome);
+                    Node * produtoNode = verificarSeIdExiste(queue, idProduto);
+                    if (produtoNode != NULL && produtoNode -> data.estoque != 0) {
+                        printf("Produto selecionado => %s\n", produtoNode -> data.nome);
                         do {
                             printf("Digite a quantidade desejada: ");
-                            if (scanf("%d", &quantidade) != 1 || quantidade > produtoNode->data.estoque || quantidade == 0) {
+                            if (scanf("%d", & quantidade) != 1 || quantidade > produtoNode -> data.estoque || quantidade == 0) {
                                 mostrarErro("\nQuantidade invalida ou insuficiente!");
                             } else {
                                 printf("Produto adicionado ao carrinho!\n");
-                                totalTemp += produtoNode->data.preco * quantidade;
-                                produtoNode->data.tempVendidos = quantidade;
-                                produtoNode->data.estoque -= quantidade;
-                                produtoNode->data.vendidos += quantidade;
+                                totalTemp += produtoNode -> data.preco * quantidade;
+                                produtoNode -> data.tempVendidos = quantidade;
+                                produtoNode -> data.estoque -= quantidade;
+                                produtoNode -> data.vendidos += quantidade;
                                 ItemCupomFiscal novaVenda;
-                                novaVenda.produtoVendido = &(produtoNode->data);
+                                novaVenda.produtoVendido = & (produtoNode -> data);
                                 novaVenda.quantidade = quantidade;
                                 novaVenda.vendido = false;
-                                novaVenda.subtotal = produtoNode->data.preco * quantidade;
+                                novaVenda.subtotal = produtoNode -> data.preco * quantidade;
                                 novaVenda.prox = NULL;
                                 inserirNovaVenda(queueVendas, novaVenda);
                                 do {
                                     printf("\nDeseja comprar mais um produto? [1 para SIM | 2 para NAO] => ");
-                                    if (scanf("%d", &opcaoMenu) != 1 || (opcaoMenu != 1 && opcaoMenu != 2)) {
+                                    if (scanf("%d", & opcaoMenu) != 1 || (opcaoMenu != 1 && opcaoMenu != 2)) {
                                         mostrarErro("Valor invalido!");
                                     } else {
                                         isEstoqueVazio = estoqueEstaVazio(queue);
@@ -598,17 +648,17 @@ void realizarVenda(Queue *queue, QueueVendas *queueVendas) {
     }
 }
 
-void mostrarRelatorioDeVendas(Queue *queue, QueueVendas *queueVendas) {
-    Node *nodeAtual = queue->head;
-    ItemCupomFiscal *primeiraVenda = queueVendas->head;
+void mostrarRelatorioDeVendas(Queue * queue, QueueVendas * queueVendas) {
+    Node * nodeAtual = queue -> head;
+    ItemCupomFiscal * primeiraVenda = queueVendas -> head;
     if (primeiraVenda != NULL) {
         time_t a_m_d_h_m_s = time(NULL);
-        struct tm *tempo = localtime(&a_m_d_h_m_s);
+        struct tm * tempo = localtime( & a_m_d_h_m_s);
         char data[25];
         strftime(data, sizeof(data), "%y-%m-%d_%H-%M-%S", tempo);
         char vendas[25];
         snprintf(vendas, sizeof(vendas), "%s.txt", data);
-        FILE *file;
+        FILE * file;
         file = fopen(vendas, "w");
         if (file == NULL) {
             printf("Erro ao criar o arquivo com o relatorio.");
@@ -625,18 +675,18 @@ void mostrarRelatorioDeVendas(Queue *queue, QueueVendas *queueVendas) {
         fprintf(file, "|%-12s|%-17s|%-19s|%-15s|%-15s\t|\n", "CODIGO", "ITEM", "VALOR TOTAL POR UN.", "ESTOQUE FINAL", "QUANTIDADE VENDIDA POR UN.");
         fprintf(file, "-------------------------------------------------------------------------------------------------\n");
         while (nodeAtual != NULL) {
-            if (nodeAtual->data.vendidos > 0) {
+            if (nodeAtual -> data.vendidos > 0) {
 
-                printf("|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", nodeAtual->data.id, nodeAtual->data.nome, nodeAtual->data.preco * nodeAtual->data.vendidos, nodeAtual->data.estoque, nodeAtual->data.vendidos);
-                fprintf(file, "|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", nodeAtual->data.id, nodeAtual->data.nome, nodeAtual->data.preco * nodeAtual->data.vendidos, nodeAtual->data.estoque, nodeAtual->data.vendidos);
+                printf("|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", nodeAtual -> data.id, nodeAtual -> data.nome, nodeAtual -> data.preco * nodeAtual -> data.vendidos, nodeAtual -> data.estoque, nodeAtual -> data.vendidos);
+                fprintf(file, "|%-12.0lf|%-17s|R$%-17.2lf|%-15d|%-26d\t|\n", nodeAtual -> data.id, nodeAtual -> data.nome, nodeAtual -> data.preco * nodeAtual -> data.vendidos, nodeAtual -> data.estoque, nodeAtual -> data.vendidos);
             }
-            nodeAtual = nodeAtual->next;
+            nodeAtual = nodeAtual -> next;
         }
         printf("-------------------------------------------------------------------------------------------------\n");
-        printf("|%30s|%-35s|R$%-18.2lf\t|\n", "", "VALOR TOTAL VENDIDO", queueVendas->total);
+        printf("|%30s|%-35s|R$%-18.2lf\t|\n", "", "VALOR TOTAL VENDIDO", queueVendas -> total);
         printf("-------------------------------------------------------------------------------------------------\n");
         fprintf(file, "-------------------------------------------------------------------------------------------------\n");
-        fprintf(file, "|%30s|%-35s|R$%-18.2lf\t|\n", "", "VALOR TOTAL VENDIDO", queueVendas->total);
+        fprintf(file, "|%30s|%-35s|R$%-18.2lf\t|\n", "", "VALOR TOTAL VENDIDO", queueVendas -> total);
         fprintf(file, "-------------------------------------------------------------------------------------------------\n");
         fclose(file);
         printf("Relatorio criado e salvo no arquivo: %s\n", vendas);
@@ -645,12 +695,12 @@ void mostrarRelatorioDeVendas(Queue *queue, QueueVendas *queueVendas) {
     }
 }
 
-void abrirSubmenuProdutos(Queue *queue, QueueVendas *queueVendas) {
+void abrirSubmenuProdutos(Queue * queue, QueueVendas * queueVendas) {
     int opcaoMenu = 0;
     while (opcaoMenu != 7) {
         printf("\n|       PRODUTOS       |\n\n");
         printf("[1] Exibir\n[2] Cadastrar\n[3] Atualizar\n[4] Excluir\n[5] Salvar\n[6] Ler\n[7] Voltar\nDigite um valor: ");
-        if (scanf("%d", &opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 7) {
+        if (scanf("%d", & opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 7) {
             mostrarErro("Valor invalido");
         } else {
             switch (opcaoMenu) {
@@ -680,12 +730,12 @@ void abrirSubmenuProdutos(Queue *queue, QueueVendas *queueVendas) {
     }
 }
 
-void abrirSubmenuVendas(Queue *queue, QueueVendas *queueVendas) {
+void abrirSubmenuVendas(Queue * queue, QueueVendas * queueVendas) {
     int opcaoMenu = 0;
     while (opcaoMenu != 3) {
         printf("\n|       VENDAS       |\n\n");
         printf("[1] Realizar Venda\n[2] Relatorio de Vendas\n[3] Voltar\nDigite um valor: ");
-        if (scanf("%d", &opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 3) {
+        if (scanf("%d", & opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 3) {
             mostrarErro("Valor invalido");
         } else {
             switch (opcaoMenu) {
@@ -703,7 +753,7 @@ void abrirSubmenuVendas(Queue *queue, QueueVendas *queueVendas) {
     }
 }
 
-void fecharAplicativo(Queue *queue, QueueVendas *queueVendas) {
+void fecharAplicativo(Queue * queue, QueueVendas * queueVendas) {
     free(queue);
     free(queueVendas);
     queue = NULL;
@@ -713,17 +763,17 @@ void fecharAplicativo(Queue *queue, QueueVendas *queueVendas) {
 
 int main() {
     int opcaoMenu = 0;
-    Queue *queue = (Queue *) malloc(sizeof(Queue));
-    queue->head = NULL;
-    queue->tail = NULL;
-    QueueVendas *queueVendas = (QueueVendas *) malloc(sizeof(QueueVendas));
-    queueVendas->head = NULL;
-    queueVendas->total = 0;
+    Queue * queue = (Queue * ) malloc(sizeof(Queue));
+    queue -> head = NULL;
+    queue -> tail = NULL;
+    QueueVendas * queueVendas = (QueueVendas * ) malloc(sizeof(QueueVendas));
+    queueVendas -> head = NULL;
+    queueVendas -> total = 0;
     lerProdutosDoArquivo(queue);
     while (1) {
         printf("\n|       MENU       |\n\n");
         printf("[1] Produtos\n[2] Vendas\n[3] Sair\nDigite um valor: ");
-        if (scanf("%d", &opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 3) {
+        if (scanf("%d", & opcaoMenu) != 1 || opcaoMenu < 1 || opcaoMenu > 3) {
             mostrarErro("Valor invalido");
         } else {
             switch (opcaoMenu) {
