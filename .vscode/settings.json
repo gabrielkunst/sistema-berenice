@@ -5,4 +5,12 @@
   "lldb.dereferencePointers": true,
   "lldb.consoleMode": "commands",
   "editor.formatOnSave": true,
+  "files.associations": {
+    ".sequelizerc": "javascript",
+    ".stylelintrc": "json",
+    "*.tsx": "typescriptreact",
+    ".env.*": "dotenv",
+    ".prettierrc": "json",
+    "funcoes.h": "c"
+  },
 }
